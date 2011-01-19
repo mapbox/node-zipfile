@@ -1,0 +1,24 @@
+{
+  "name"          : "zipfile",
+  "version"       : "0.1.0",
+  "main"          : "./lib/index.js",
+  "description"   : "C++ library for handling zipfiles in node",
+  "keywords"      : ["zipfile", "uncompress", "unzip", "zlib"],
+  "url"           : "http://github.com/springmeyer/node-zipfile",
+   "repositories" : [
+       {
+           "type" : "git",
+           "url"  : "git://github.com/springmeyer/node-zipfile.git" 
+       } 
+   ],
+  "author"        : "Dane Springmeyer <dane@dbsgeo.com>",
+  "contributors"  : [],
+  "licenses"      : ["BSD"],
+  "dependencies"  : [],
+   "directories"  : {
+       "examples" : "examples",
+       "src": "src"
+   },
+  "engines"       : { "node": ">= 0.2.4" },
+  "scripts"       : {"install": "node-waf -v configure build"}
+}
