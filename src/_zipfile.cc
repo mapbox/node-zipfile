@@ -5,6 +5,9 @@
 #include <node.h>
 #include <node_version.h>
 
+// node-zipfile
+#include "node_zipfile.hpp"
+
 using namespace node;
 using namespace v8;
 
@@ -14,6 +17,8 @@ extern "C" {
 
   static void init (Handle<Object> target)
   {
+
+    ZipFile::Initialize(target);
 
     // node-zipfile version
     target->Set(String::NewSymbol("version"), String::New("0.1.0"));

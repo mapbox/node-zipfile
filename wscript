@@ -44,6 +44,7 @@ def build(bld):
     obj.cxxflags = ["-DNDEBUG", "-O3", "-g", "-Wall", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
     obj.target = TARGET
     obj.source = "src/_zipfile.cc"
+    obj.source += " src/node_zipfile.cpp"
     obj.uselib = "ZIPFILE"
     start_dir = bld.path.find_dir('lib')
     # http://www.freehackers.org/~tnagy/wafbook/index.html#_installing_files
