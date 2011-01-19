@@ -13,11 +13,17 @@
 
   Install libzip:
   
-    $ hg clone http://hg.nih.at/libzip
-    $ cd libzip
-    $ cmake .
-    $ make
-    $ sudo make install
+    Debian:
+    
+      $ sudo apt-get install libzip-dev libzip1
+    
+    Or from source:
+
+      $ hg clone http://hg.nih.at/libzip
+      $ cd libzip
+      $ cmake .
+      $ make
+      $ sudo make install
   
   Install node-zipfile:
   
