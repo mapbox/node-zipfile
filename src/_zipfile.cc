@@ -11,8 +11,6 @@
 using namespace node;
 using namespace v8;
 
-#define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
-
 extern "C" {
 
   static void init (Handle<Object> target)

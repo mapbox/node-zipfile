@@ -23,7 +23,10 @@ class ZipFile: public node::ObjectWrap {
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
     
-    ZipFile(std::string const& name);
+    static Handle<Value> get_prop(Local<String> property,
+                         const AccessorInfo& info);
+
+    ZipFile();
 
   private:
     ~ZipFile();

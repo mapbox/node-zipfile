@@ -10,6 +10,14 @@
 
 
 ## Installation
+
+  Install libzip:
+  
+    $ hg clone http://hg.nih.at/libzip
+    $ cd libzip
+    $ cmake .
+    $ make
+    $ sudo make install
   
   Install node-zipfile:
   
