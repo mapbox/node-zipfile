@@ -26,10 +26,13 @@ class ZipFile: public node::ObjectWrap {
     static Handle<Value> get_prop(Local<String> property,
                          const AccessorInfo& info);
 
-    ZipFile();
+    static Handle<Value> readFileSync(const Arguments& args);
+    
+    ZipFile(std::string const& file_name);
 
   private:
     ~ZipFile();
+    std::string const& file_name_;
     struct zip *archive_;
 };
 
