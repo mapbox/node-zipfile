@@ -29,6 +29,8 @@ var zf = new zipfile.ZipFile('./data/folder.zip');
 assert.equal(zf.count,3) // one folder, two files
 assert.deepEqual(zf.names,['folder/','folder/one.txt','folder/two.txt'])
 
+var zf = new zipfile.ZipFile('./data/world_merc.zip');
+
 
 function mkdirP (p, mode, f) {
     var cb = f || function () {};
@@ -48,7 +50,7 @@ function mkdirP (p, mode, f) {
 };
 
 zf.names.forEach(function(name) {
-    var uncompressed = path.join('/tmp/',name);
+    var uncompressed = path.join('/tmp',name);
     var dirname = path.dirname(uncompressed);
     mkdirP(dirname, 0755 , function(err) {
         if (err && err.errno != constants.EEXIST) throw err;
