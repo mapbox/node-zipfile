@@ -25,6 +25,10 @@ var zf = new zipfile.ZipFile('./data/Archive.zip');
 assert.equal(zf.count,2)
 assert.deepEqual(zf.names,['one.txt','two.txt'])
 
+var zf = new zipfile.ZipFile('./data/folder.zip');
+assert.equal(zf.count,3) // one folder, two files
+assert.deepEqual(zf.names,['folder/','folder/one.txt','folder/two.txt'])
+
 
 function mkdirP (p, mode, f) {
     var cb = f || function () {};
@@ -43,10 +47,6 @@ function mkdirP (p, mode, f) {
     });
 };
 
-
-var zf = new zipfile.ZipFile('./data/test.zip');
-//var zf = new zipfile.ZipFile('./data/folder.zip');
-
 zf.names.forEach(function(name) {
     var uncompressed = path.join('/tmp/',name);
     var dirname = path.dirname(uncompressed);
@@ -61,4 +61,4 @@ zf.names.forEach(function(name) {
     })
 })
 
-//console.log('All tests pass...');
+console.log('All tests pass...');
