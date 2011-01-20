@@ -2,7 +2,19 @@
 # Node-Zipfile
       
   Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfiles in [node](http://nodejs.org).
-  
+
+
+# Example
+
+  var zipfile = require('zipfile')
+  var zf = new zipfile.ZipFile('./data/world_merc.zip')
+  zf
+  { names: [ 'world_merc.dbf', 'world_merc.prj', 'world_merc.shp', 'world_merc.shx' ],
+    count: 4 }
+  var buffer = zf.readFileSync('world_merc.prj')
+  buffer.toString()
+  'PROJCS["Google Maps Global Mercator",GEOGCS .... '
+
 
 ## Depends
 
