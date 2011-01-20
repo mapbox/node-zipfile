@@ -147,7 +147,12 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
   	    return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
-    node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
+    #if NODE_VERSION_AT_LEAST(0,3,0)
+        node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
+    #else
+        node::Buffer *retbuf = Buffer::New(data.size());
+        memcpy(retbuf->data(), (char *)&data[0], data.size());
+    #endif
     
     zip_fclose(zf_ptr);
     return scope.Close(retbuf->handle_);
