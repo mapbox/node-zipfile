@@ -38,6 +38,7 @@
     $ cmake .
     $ make
     $ sudo make install
+    $ sudo ldconfig
   
   Install node-zipfile:
   
@@ -51,6 +52,10 @@
   Make sure the node modules are on your path:
   
     export NODE_PATH=/usr/local/lib/node/
+
+  Or you can install via npm:
+  
+    $ npm install zipfile
 
 
 ## License

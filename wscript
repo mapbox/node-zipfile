@@ -49,7 +49,9 @@ def build(bld):
     start_dir = bld.path.find_dir('lib')
     # http://www.freehackers.org/~tnagy/wafbook/index.html#_installing_files
     bld.install_files('${PREFIX}/lib/node/zipfile', start_dir.ant_glob('*'), cwd=start_dir, relative_trick=True)
-    
+    # install command line programs
+    bin_dir = bld.path.find_dir('./bin')
+    bld.install_files('${PREFIX}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
 
 def shutdown():
     if Options.commands['clean']:

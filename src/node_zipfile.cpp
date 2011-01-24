@@ -1,10 +1,13 @@
 #include "node_zipfile.hpp"
 
+// stl
 #include <sstream>
 #include <vector>
+#include <cstring>
 
 #include <node_buffer.h>
 #include <node_version.h>
+
 
 #define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
 
@@ -151,7 +154,7 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
         node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
     #else
         node::Buffer *retbuf = Buffer::New(data.size());
-        memcpy(retbuf->data(), (char *)&data[0], data.size());
+        std::memcpy(retbuf->data(), (char *)&data[0], data.size());
     #endif
     
     zip_fclose(zf_ptr);

@@ -15,6 +15,9 @@
   "contributors"  : [],
   "licenses"      : ["BSD"],
   "dependencies"  : [],
+  "bin"           : { 
+       "unzip.js" : "./bin/unzip.js" 
+   },
    "directories"  : {
        "examples" : "examples",
        "src": "src"
