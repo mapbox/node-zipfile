@@ -90,7 +90,10 @@ def configure(conf):
 
     linkflags = libzip_libpath
     #linkflags.append('-L/usr/local/lib')
-    linkflags.append('-lzip')
+    if '-lzip' not in linkflags:
+        linkflags.append('-lzip')
+    if '-lz' not in linkflags:
+        linkflags.append('-lz')
 
     conf.env.append_value("LINKFLAGS", linkflags)
     
