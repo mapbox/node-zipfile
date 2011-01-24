@@ -31,6 +31,10 @@ def configure(conf):
     conf.check_tool("compiler_cxx")
     conf.check_tool("node_addon")
 
+    libzip_includes = []
+    libzip_libpath  = []
+    auto_configured = False
+
     libzip_dir = conf.env['shared_libzip_dir']
     if libzip_dir:
         norm_path = os.path.realpath(libzip_dir)
@@ -44,35 +48,45 @@ def configure(conf):
         libzip_libpath  = [os.path.join('%s' % norm_path,'lib')]
     
     else:
-        # reasonable defaults for searching
-        libzip_includes = ['/usr/local/include',
-                           '/usr/local/lib/libzip/include',
-                           '/usr/include',
-                           '/usr/lib/libzip/include',
-                           ]
-        libzip_libpath  = ['/usr/local/lib','/usr/lib']
+        pkg_config = conf.find_program('pkg-config', var='PKG_CONFIG', mandatory=False)
+        if pkg_config:
+            cmd = '%s libzip' %  pkg_config
+            if int(call(cmd.split(' '))) == 0:
+                Utils.pprint('GREEN','Sweet, found libzip via pkg-config')
+                libzip_includes.extend(popen("pkg-config --cflags libzip").readline().strip().split(' '))
+                libzip_libpath.extend(popen("pkg-config --libs libzip").readline().strip().split(' '))
+                auto_configured = True
+
+        if not auto_configured:
+            # reasonable defaults for searching
+            libzip_includes = ['/usr/local/include',
+                               '/usr/local/lib/libzip/include',
+                               '/usr/include',
+                               '/usr/lib/libzip/include',
+                               ]
+            libzip_libpath  = ['/usr/local/lib','/usr/lib']
     
-    # zipconf.h
-    if not conf.check_cxx(lib='zip', header_name='zip.h',
-                          uselib_store='ZIP',
-                          includes=libzip_includes,
-                          libpath=libzip_libpath):
-        conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'hg clone http://hg.nih.at/libzip'\n  (see READE.md for more info)\n")
-    else:
-        Utils.pprint('GREEN', 'Sweet, found viable libzip depedency')
-
-    # strip paths that don't exist, turn into proper flags
-    for i in libzip_includes:
-       if not os.path.exists(i):
-           libzip_includes.remove(i)
-       else:
-           libzip_includes[libzip_includes.index(i)] = '-I%s' % i
-
-    for i in libzip_libpath:
-       if not os.path.exists(i):
-           lipzip_libpath.remove(i)
-       else:
-           libzip_libpath[libzip_libpath.index(i)] = '-L%s' % i
+    if not auto_configured:
+        if not conf.check_cxx(lib='zip', header_name='zip.h',
+                              uselib_store='ZIP',
+                              includes=libzip_includes,
+                              libpath=libzip_libpath):
+            conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'hg clone http://hg.nih.at/libzip'\n  (see READE.md for more info)\n")
+        else:
+            Utils.pprint('GREEN', 'Sweet, found viable libzip depedency')
+    
+        # strip paths that don't exist, turn into proper flags
+        for i in libzip_includes:
+           if not os.path.exists(i):
+               libzip_includes.remove(i)
+           else:
+               libzip_includes[libzip_includes.index(i)] = '-I%s' % i
+    
+        for i in libzip_libpath:
+           if not os.path.exists(i):
+               lipzip_libpath.remove(i)
+           else:
+               libzip_libpath[libzip_libpath.index(i)] = '-L%s' % i
 
     linkflags = libzip_libpath
     #linkflags.append('-L/usr/local/lib')
