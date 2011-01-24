@@ -44,11 +44,19 @@
   
     $ git clone git://github.com/springmeyer/node-zipfile.git
     $ cd node-zipfile
+
+  If you installed libzip in a custom location then configure like:
+    
+    $ configure --libzip=/opt/local
+
+  Otherwise /usr/ and /usr/local will be searched for libzip:
+
     $ ./configure
     $ make
     $ sudo make install
     $ ./test.js
 
+  
   Make sure the node modules are on your path:
   
     export NODE_PATH=/usr/local/lib/node/
