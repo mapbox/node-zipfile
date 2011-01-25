@@ -33,11 +33,15 @@
   
   Or from source:
 
-    $ hg clone http://hg.nih.at/libzip
-    $ cd libzip
-    $ cmake .
+    $ wget http://nih.at/libzip/libzip-0.9.3.tar.bz2
+    $ tar xvf libzip-0.9.3.tar.bz2
+    $ cd libzip-0.9.3
+    $ ./configure
     $ make
     $ sudo make install
+  
+  Then on linux do:
+  
     $ sudo ldconfig
   
   Install node-zipfile:
