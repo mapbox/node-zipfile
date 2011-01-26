@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <cstring>
+#include <algorithm>
 //#include <iostream>
 
 #include <node_buffer.h>
@@ -122,7 +123,7 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
 
     int idx = -1;
     
-    std::vector<std::string>::iterator it = find(zf->names_.begin(), zf->names_.end(), name);
+    std::vector<std::string>::iterator it = std::find(zf->names_.begin(), zf->names_.end(), name);
     if (it!=zf->names_.end()) {
         idx = distance(zf->names_.begin(), it);
     }
@@ -237,7 +238,7 @@ int ZipFile::EIO_ReadFile(eio_req *req)
 
     int idx = -1;
     
-    std::vector<std::string>::iterator it = find(closure->zf->names_.begin(),
+    std::vector<std::string>::iterator it = std::find(closure->zf->names_.begin(),
                                             closure->zf->names_.end(), 
                                             closure->name);
     if (it!=closure->zf->names_.end()) {
