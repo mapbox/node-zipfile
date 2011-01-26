@@ -294,7 +294,7 @@ int ZipFile::EIO_AfterReadFile(eio_req *req)
   
     if (closure->error) {
         Local<Value> argv[1] = { Exception::Error(String::New(closure->error_name.c_str())) };
-        closure->cb->Call(Context::GetCurrent()->Global(), 2, argv);
+        closure->cb->Call(Context::GetCurrent()->Global(), 1, argv);
     } else {
         #if NODE_VERSION_AT_LEAST(0,3,0)
           node::Buffer *retbuf = Buffer::New((char *)&closure->data[0],closure->data.size());
