@@ -7,6 +7,7 @@
 
 // stl
 #include <string>
+#include <vector>
 
 // libzip
 #include <zlib.h>
@@ -40,6 +41,7 @@ class ZipFile: public node::ObjectWrap {
     ~ZipFile();
     std::string const file_name_;
     struct zip *archive_;
+    std::vector<std::string> names_;
 };
 
 #endif

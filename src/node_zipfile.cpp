@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <cstring>
+//#include <iostream>
 
 #include <node_buffer.h>
 #include <node_version.h>
@@ -35,7 +36,8 @@ void ZipFile::Initialize(Handle<Object> target) {
 ZipFile::ZipFile(std::string const& file_name) :
   ObjectWrap(),
   file_name_(file_name),
-  archive_() {}
+  archive_(),
+  names_() {}
 
 ZipFile::~ZipFile() {
     zip_close(archive_);
@@ -56,15 +58,25 @@ Handle<Value> ZipFile::New(const Arguments& args)
     struct zip *za;
     int err;
     char errstr[1024];
-  	if ((za=zip_open(input_file.c_str(), 0, &err)) == NULL) {
-  	    zip_error_to_str(errstr, sizeof(errstr), err, errno);
-  	    std::stringstream s;
-  	    s << "cannot open file: " << input_file << " error: " << errstr << "\n";
+    if ((za=zip_open(input_file.c_str(), 0, &err)) == NULL) {
+        zip_error_to_str(errstr, sizeof(errstr), err, errno);
+        std::stringstream s;
+        s << "cannot open file: " << input_file << " error: " << errstr << "\n";
         return ThrowException(Exception::Error(
             String::New(s.str().c_str())));
-  	}
+    }
 
     ZipFile* zf = new ZipFile(input_file);
+
+    int num = zip_get_num_files(za);
+    zf->names_.reserve(num);
+    int i = 0;
+    for (i=0; i<num; i++) {
+        struct zip_stat st;
+        zip_stat_index(za, i, 0, &st);
+        zf->names_.push_back(st.name);
+    }
+
     zf->archive_ = za;
     zf->Wrap(args.This());
     return args.This();
@@ -78,18 +90,16 @@ Handle<Value> ZipFile::get_prop(Local<String> property,
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(info.This());
     std::string a = TOSTR(property);
     if (a == "count") {
-          int num = zip_get_num_files(zf->archive_);
-          return scope.Close(Integer::New(num));
+          return scope.Close(Integer::New(zf->names_.size()));
     }
     if (a == "names") {
-          int num = zip_get_num_files(zf->archive_);
+          unsigned num = zf->names_.size();
           Local<Array> a = Array::New(num);
-          int i = 0;
-          for (i=0; i<num; i++) {
-              struct zip_stat st;
-              zip_stat_index(zf->archive_, i, 0, &st);
-              a->Set(i,String::New(st.name));
+          for (unsigned i = 0; i < num; ++i )
+          {
+              a->Set(i,String::New(zf->names_[i].c_str()));
           }
+          
           return scope.Close(a);
     }
     return Undefined();    
@@ -111,27 +121,23 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
     struct zip_file *zf_ptr;
 
     int idx = -1;
-    int num = zip_get_num_files(zf->archive_);
-    int i = 0;
-    for (i=0; i<num; i++) {
-        struct zip_stat st;
-        zip_stat_index(zf->archive_, i, 0, &st);
-        if (st.name == name) {
-            idx = i;
-        }
+    
+    std::vector<std::string>::iterator it = find(zf->names_.begin(), zf->names_.end(), name);
+    if (it!=zf->names_.end()) {
+        idx = distance(zf->names_.begin(), it);
     }
 
     if (idx == -1) {
-  	    std::stringstream s;
-  	    s << "No file found by the name of: '" << name << "\n";
-        return ThrowException(Exception::Error(String::New(s.str().c_str())));    
+        std::stringstream s;
+        s << "No file found by the name of: '" << name << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
     if ((zf_ptr=zip_fopen_index(zf->archive_, idx, 0)) == NULL) {
-  	    zip_fclose(zf_ptr);
-  	    std::stringstream s;
-  	    s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(zf->archive_) << "\n";
-  	    return ThrowException(Exception::Error(String::New(s.str().c_str())));
+        zip_fclose(zf_ptr);
+        std::stringstream s;
+        s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(zf->archive_) << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
     struct zip_stat st;
@@ -146,9 +152,9 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
 
     if (result < 0) {
         zip_fclose(zf_ptr);
-  	    std::stringstream s;
-  	    s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
-  	    return ThrowException(Exception::Error(String::New(s.str().c_str())));
+        std::stringstream s;
+        s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
     #if NODE_VERSION_AT_LEAST(0,3,0)
@@ -188,7 +194,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     
     // last arg must be function callback
     if (!args[args.Length()-1]->IsFunction())
-        return ThrowException(Exception::TypeError(                         
+        return ThrowException(Exception::TypeError(
                   String::New("last argument must be a callback function")));
   
     std::string name = TOSTR(args[0]);
@@ -202,14 +208,14 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     struct zip *za;
     int err;
     char errstr[1024];
-  	if ((za=zip_open(zf->file_name_.c_str() , 0, &err)) == NULL) {
-  	    zip_error_to_str(errstr, sizeof(errstr), err, errno);
-  	    std::stringstream s;
-  	    s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
+    if ((za=zip_open(zf->file_name_.c_str() , 0, &err)) == NULL) {
+        zip_error_to_str(errstr, sizeof(errstr), err, errno);
+        std::stringstream s;
+        s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
         zip_close(za);
         return ThrowException(Exception::Error(
             String::New(s.str().c_str())));
-  	}
+    }
 
     closure->zf = zf;
     closure->za = za;
@@ -230,30 +236,28 @@ int ZipFile::EIO_ReadFile(eio_req *req)
     struct zip_file *zf_ptr=NULL;
 
     int idx = -1;
-    int num = zip_get_num_files(closure->za);
-    int i = 0;
-    for (i=0; i<num; i++) {
-        struct zip_stat st;
-        zip_stat_index(closure->za, i, 0, &st);
-        if (st.name == closure->name) {
-            idx = i;
-        }
+    
+    std::vector<std::string>::iterator it = find(closure->zf->names_.begin(),
+                                            closure->zf->names_.end(), 
+                                            closure->name);
+    if (it!=closure->zf->names_.end()) {
+        idx = distance(closure->zf->names_.begin(), it);
     }
 
     if (idx == -1) {
-  	    std::stringstream s;
-  	    s << "No file found by the name of: '" << closure->name << "\n";
+        std::stringstream s;
+        s << "No file found by the name of: '" << closure->name << "\n";
         closure->error = true;
-        closure->error_name = s.str();    
+        closure->error_name = s.str();
 
     } else {
 
         if ((zf_ptr = zip_fopen_index(closure->za, idx, 0)) == NULL) {
-      	    std::stringstream s;
-      	    s << "cannot open file #" << idx << " in "
-      	      << closure->name << ": archive error: " << zip_strerror(closure->za) << "\n";
+            std::stringstream s;
+            s << "cannot open file #" << idx << " in "
+              << closure->name << ": archive error: " << zip_strerror(closure->za) << "\n";
             closure->error = true;
-            closure->error_name = s.str();    
+            closure->error_name = s.str();
 
         } else {
         
@@ -266,17 +270,15 @@ int ZipFile::EIO_ReadFile(eio_req *req)
             result = (int)zip_fread( zf_ptr, reinterpret_cast<void*> (&closure->data[0]), closure->data.size() );
         
             if (result < 0) {
-          	    std::stringstream s;
-          	    s << "error reading file #" << idx << " in " 
-          	      << closure->name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
+                std::stringstream s;
+                s << "error reading file #" << idx << " in " 
+                  << closure->name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
                 closure->error = true;
-                closure->error_name = s.str();    
-            
+                closure->error_name = s.str();
             }
         }
     }
 
-    zip_close(closure->za);
     zip_fclose(zf_ptr);
     return 0;
 }
@@ -292,8 +294,6 @@ int ZipFile::EIO_AfterReadFile(eio_req *req)
   
     if (closure->error) {
         Local<Value> argv[1] = { Exception::Error(String::New(closure->error_name.c_str())) };
-        //Local<Value> argv[2] = { Exception::Error(String::New(closure->error_name.c_str())),
-        //                         Local<Value>::New(Null()) };
         closure->cb->Call(Context::GetCurrent()->Global(), 2, argv);
     } else {
         #if NODE_VERSION_AT_LEAST(0,3,0)
