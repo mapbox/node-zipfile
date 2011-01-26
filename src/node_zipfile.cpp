@@ -3,7 +3,6 @@
 // stl
 #include <sstream>
 #include <vector>
-//#include <iostream>
 #include <cstring>
 
 #include <node_buffer.h>
@@ -170,7 +169,6 @@ typedef struct {
     bool error;
     std::string error_name;
     std::vector<unsigned char> data;
-    //Handle<Function> fn;
     Persistent<Function> cb;
 } closure_t;
 
@@ -198,7 +196,6 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     closure_t *closure = new closure_t();
-
 
     // libzip is not threadsafe so we cannot use the zf->archive_
     // instead we open a new zip archive for each thread
@@ -279,7 +276,7 @@ int ZipFile::EIO_ReadFile(eio_req *req)
         }
     }
 
-    //zip_close(closure->za);
+    zip_close(closure->za);
     zip_fclose(zf_ptr);
     return 0;
 }
