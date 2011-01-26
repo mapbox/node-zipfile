@@ -70,7 +70,7 @@ def configure(conf):
                               uselib_store='ZIP',
                               includes=libzip_includes,
                               libpath=libzip_libpath):
-            conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'hg clone http://hg.nih.at/libzip'\n  (see READE.md for more info)\n")
+            conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'http://nih.at/libzip/libzip-0.9.3.tar.bz2'\n  (see README.md for more info)\n")
         else:
             Utils.pprint('GREEN', 'Sweet, found viable libzip depedency')
     
