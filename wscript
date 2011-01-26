@@ -42,8 +42,7 @@ def configure(conf):
             norm_path = os.path.dirname(norm_path)
         
         libzip_includes = [os.path.join('%s' % norm_path,'include'),
-                           os.path.join('%s' % norm_path),
-                           'lib/libzip/include'
+                           os.path.join('%s' % norm_path,'lib/libzip/include')
                           ]
         libzip_libpath  = [os.path.join('%s' % norm_path,'lib')]
     
@@ -76,17 +75,17 @@ def configure(conf):
             Utils.pprint('GREEN', 'Sweet, found viable libzip depedency')
     
         # strip paths that don't exist, turn into proper flags
+        new_inc = []
         for i in libzip_includes:
-           if not os.path.exists(i):
-               libzip_includes.remove(i)
-           else:
-               libzip_includes[libzip_includes.index(i)] = '-I%s' % i
+           if os.path.exists(i):
+               new_inc.append('-I%s' % i)
+        libzip_includes = new_inc
     
+        new_inc = []
         for i in libzip_libpath:
-           if not os.path.exists(i):
-               lipzip_libpath.remove(i)
-           else:
-               libzip_libpath[libzip_libpath.index(i)] = '-L%s' % i
+           if os.path.exists(i):
+               new_inc.append('-L%s' % i)
+        libzip_libpath = new_inc
 
     linkflags = libzip_libpath
     #linkflags.append('-L/usr/local/lib')
