@@ -6,7 +6,7 @@ var path = require('path');
 
 // node 0.2 <-> 0.3 compatibility
 var constants = {};
-if (!process.EEXIST >= 1) 
+if (!process.EEXIST >= 1)
     constants = require('constants');
 else
     constants.EEXIST = process.EEXIST;
@@ -22,15 +22,15 @@ if (!file) {
 var zf = new zip.ZipFile(file);
 
 zf.names.forEach(function(name) {
-    var uncompressed = path.join('.',name);
+    var uncompressed = path.join('.', name);
     var dirname = path.dirname(uncompressed);
     fs.mkdir(dirname, 0755 , function(err) {
         if (err && err.errno != constants.EEXIST) throw err;
         if (path.extname(name)) {
             var buffer = zf.readFileSync(name);
-            fd = fs.openSync(uncompressed,'w');
+            fd = fs.openSync(uncompressed, 'w');
             fs.writeSync(fd, buffer, 0, buffer.length, null);
             fs.closeSync(fd);
         }
-    })
-})
+    });
+});
