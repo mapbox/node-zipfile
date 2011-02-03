@@ -31,6 +31,10 @@
   
     $ sudo apt-get install libzip-dev libzip1
   
+  OS X:
+    
+    $ brew install libzip
+  
   Or from source:
 
     $ wget http://nih.at/libzip/libzip-0.9.3.tar.bz2

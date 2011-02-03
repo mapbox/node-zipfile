@@ -5,12 +5,10 @@ var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
 
-// node 0.2 <-> 0.3 compatibility
-var constants = {};
-if (!process.EEXIST >= 1)
-    constants = require('constants');
-else
-    constants.EEXIST = process.EEXIST;
+// node compatibility for mkdirs below
+var constants = (!process.EEXIST >= 1) ?
+    require('constants') :
+    { EEXIST: process.EEXIST };
 
 // created with:
 // $ zip -9vr test.zip *txt -c "a comment" -z "zipfile comment"
@@ -45,7 +43,7 @@ function mkdirP(p, mode, f) {
     path.exists(p, function(exists) {
         if (exists) cb(null);
         else mkdirP(ps.slice(0, -1).join('/'), mode, function(err) {
-            if (err && err.errno != constants.EEXIST) cb(err);
+            if (err && err.errno != process.EEXIST) cb(err);
             else fs.mkdir(p, mode, cb);
         });
     });
@@ -57,7 +55,7 @@ zf.names.forEach(function(name) {
     var uncompressed = path.join('/tmp/sync', name);
     var dirname = path.dirname(uncompressed);
     mkdirP(dirname, 0755 , function(err) {
-        if (err && err.errno != constants.EEXIST) throw err;
+        if (err && err.errno != process.EEXIST) throw err;
         if (path.extname(name)) {
             var buffer = zf.readFileSync(name);
             fd = fs.openSync(uncompressed, 'w');
