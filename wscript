@@ -77,7 +77,7 @@ def configure(conf):
     elif not shared_libzip:
         auto_configured = True
         libzip_includes = ['-I../deps/libzip-0.9.3/lib']
-        libzip_libpath  = ['-L../deps/libzip-0.9.3/lib/.libs']
+        libzip_libpath  = ['../deps/libzip-0.9.3/lib/.libs/libzip.a']
         
     if not auto_configured:
         if not conf.check_cxx(lib='zip', header_name='zip.h',
@@ -102,9 +102,9 @@ def configure(conf):
         libzip_libpath = new_inc
 
     linkflags = libzip_libpath
-    #linkflags.append('-L/usr/local/lib')
-    if '-lzip' not in linkflags:
-        linkflags.append('-lzip')
+    if shared_libzip:
+        if '-lzip' not in linkflags:
+            linkflags.append('-lzip')
     if '-lz' not in linkflags:
         linkflags.append('-lz')
 
