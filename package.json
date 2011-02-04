@@ -23,5 +23,5 @@
        "src": "src"
    },
   "engines"       : { "node": ">= 0.2.4" },
-  "scripts"       : {"install": "node-waf -v configure build"}
+  "scripts"       : {"install": "./configure;make;make install"}
 }
