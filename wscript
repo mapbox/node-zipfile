@@ -34,9 +34,20 @@ def set_options(opt):
                   , dest='shared_libzip'
                   )
 
+def configure_libzip():
+	if not Options.options.shared_libzip:
+	    Utils.pprint('GREEN','configuring internal libzip dep')
+	    os.chdir('deps')
+	    if not os.path.exists('libzip-0.9.3'):
+	        os.system('tar xvf libzip-0.9.3.tar.bz2')
+	    os.chdir('libzip-0.9.3')
+	    os.system("CFLAGS='-fPIC' ./configure --disable-dependency-tracking --enable-static --disable-shared")
+	    os.chdir('../../')
+
 def configure(conf):
     conf.check_tool("compiler_cxx")
     conf.check_tool("node_addon")
+    configure_libzip()
 
     libzip_includes = []
     libzip_libpath  = []
@@ -119,8 +130,15 @@ def configure(conf):
     #ldflags = []
     #conf.env.append_value("LDFLAGS", ldflags)
 
+def build_libzip():
+	if not Options.options.shared_libzip:
+		os.chdir('deps/libzip-0.9.3')
+		os.system('make')
+		os.chdir('../../')
+
 def build(bld):
     obj = bld.new_task_gen("cxx", "shlib", "node_addon", install_path=None)
+    build_libzip()
     obj.cxxflags = ["-DNDEBUG", "-O3", "-g", "-Wall", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
     obj.target = TARGET
     obj.source = "src/_zipfile.cc"
@@ -133,9 +151,16 @@ def build(bld):
     bin_dir = bld.path.find_dir('./bin')
     bld.install_files('${PREFIX}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
 
+def clean_libzip():
+	if not Options.options.shared_libzip:
+		os.chdir('deps/libzip-0.9.3')
+		os.system('make clean distclean')
+		os.chdir('../../')
+
 def shutdown():
     if Options.commands['clean']:
         if exists(TARGET): unlink(TARGET)
+        clean_libzip()
     if Options.commands['clean']:
         if exists(dest):
             unlink(dest)
