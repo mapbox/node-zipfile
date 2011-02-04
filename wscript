@@ -19,14 +19,21 @@ settings = 'lib/settings.js'
 
 def set_options(opt):
     opt.tool_options("compiler_cxx")
-
+    opt.tool_options('misc')
     opt.add_option( '--libzip'
                   , action='store'
-                  , default=False
+                  , default=None
                   , help='Directory prefix containing libzip "lib" and "include" files'
                   , dest='shared_libzip_dir'
                   )
-    
+
+    opt.add_option( '--shared-libzip'
+                  , action='store_true'
+                  , default=False
+                  , help='Build dynamically against external install of libzip (default False - build uses internal copy)'
+                  , dest='shared_libzip'
+                  )
+
 def configure(conf):
     conf.check_tool("compiler_cxx")
     conf.check_tool("node_addon")
@@ -34,8 +41,10 @@ def configure(conf):
     libzip_includes = []
     libzip_libpath  = []
     auto_configured = False
-
-    libzip_dir = conf.env['shared_libzip_dir']
+    o = Options.options
+    libzip_dir = o.shared_libzip_dir
+    shared_libzip = o.shared_libzip
+    
     if libzip_dir:
         norm_path = os.path.realpath(libzip_dir)
         if norm_path.endswith('lib') or norm_path.endswith('include'):
@@ -46,7 +55,7 @@ def configure(conf):
                           ]
         libzip_libpath  = [os.path.join('%s' % norm_path,'lib')]
     
-    else:
+    elif shared_libzip:
         pkg_config = conf.find_program('pkg-config', var='PKG_CONFIG', mandatory=False)
         if pkg_config:
             cmd = '%s libzip' %  pkg_config
@@ -65,6 +74,11 @@ def configure(conf):
                                ]
             libzip_libpath  = ['/usr/local/lib','/usr/lib']
     
+    elif not shared_libzip:
+        auto_configured = True
+        libzip_includes = ['-I../deps/libzip-0.9.3/lib']
+        libzip_libpath  = ['-L../deps/libzip-0.9.3/lib/.libs']
+        
     if not auto_configured:
         if not conf.check_cxx(lib='zip', header_name='zip.h',
                               uselib_store='ZIP',

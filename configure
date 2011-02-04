@@ -1,3 +1,11 @@
 #!/bin/sh
 
+cd deps/
+# internal libzip
+if ! test -e libzip-0.9.3; then
+ tar xvf libzip-0.9.3.tar.bz2
+fi 
+cd libzip-0.9.3
+./configure --disable-dependency-tracking --enable-static --disable-shared
+cd ../../
 node-waf configure $@
