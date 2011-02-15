@@ -43,7 +43,7 @@ function mkdirP(p, mode, f) {
     path.exists(p, function(exists) {
         if (exists) cb(null);
         else mkdirP(ps.slice(0, -1).join('/'), mode, function(err) {
-            if (err && err.errno != process.EEXIST) cb(err);
+            if (err && err.errno != contants.EEXIST) cb(err);
             else fs.mkdir(p, mode, cb);
         });
     });
@@ -55,7 +55,7 @@ zf.names.forEach(function(name) {
     var uncompressed = path.join('/tmp/sync', name);
     var dirname = path.dirname(uncompressed);
     mkdirP(dirname, 0755 , function(err) {
-        if (err && err.errno != process.EEXIST) throw err;
+        if (err && err.errno != contants.EEXIST) throw err;
         if (path.extname(name)) {
             var buffer = zf.readFileSync(name);
             fd = fs.openSync(uncompressed, 'w');

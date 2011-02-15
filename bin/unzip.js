@@ -23,7 +23,7 @@ zf.names.forEach(function(name) {
     var uncompressed = path.join('.', name);
     var dirname = path.dirname(uncompressed);
     fs.mkdir(dirname, 0755 , function(err) {
-        if (err && err.errno != process.EEXIST) throw err;
+        if (err && err.errno != constants.EEXIST) throw err;
         if (path.extname(name)) {
             var buffer = zf.readFileSync(name);
             fd = fs.openSync(uncompressed, 'w');
