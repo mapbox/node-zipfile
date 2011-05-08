@@ -146,10 +146,10 @@ def build(bld):
     obj.uselib = "ZIPFILE"
     start_dir = bld.path.find_dir('lib')
     # http://www.freehackers.org/~tnagy/wafbook/index.html#_installing_files
-    bld.install_files('${PREFIX}/lib/node/zipfile', start_dir.ant_glob('*'), cwd=start_dir, relative_trick=True)
+    bld.install_files('${LIBPATH_NODE}/node/zipfile', start_dir.ant_glob('*'), cwd=start_dir, relative_trick=True)
     # install command line programs
     bin_dir = bld.path.find_dir('./bin')
-    bld.install_files('${PREFIX}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
+    bld.install_files('${PREFIX_NODE}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
 
 def clean_libzip():
 	if not Options.options.shared_libzip:

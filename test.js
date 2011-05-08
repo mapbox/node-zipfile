@@ -55,7 +55,7 @@ zf.names.forEach(function(name) {
     var uncompressed = path.join('/tmp/sync', name);
     var dirname = path.dirname(uncompressed);
     mkdirP(dirname, 0755 , function(err) {
-        if (err && err.errno != contants.EEXIST) throw err;
+        if (err && err.errno != constants.EEXIST) throw err;
         if (path.extname(name)) {
             var buffer = zf.readFileSync(name);
             fd = fs.openSync(uncompressed, 'w');
