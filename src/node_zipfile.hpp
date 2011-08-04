@@ -29,9 +29,11 @@ class ZipFile: public node::ObjectWrap {
 
     // Sync
     static Handle<Value> readFileSync(const Arguments& args);
+    static Handle<Value> readFileSyncIndex(const Arguments& args);
     
     // Async
     static Handle<Value> readFile(const Arguments& args);
+    static Handle<Value> readFileIndex(const Arguments& args);
     static int EIO_ReadFile(eio_req *req);
     static int EIO_AfterReadFile(eio_req *req);
     

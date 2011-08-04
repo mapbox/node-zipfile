@@ -25,7 +25,9 @@ void ZipFile::Initialize(Handle<Object> target) {
 
     // functions
     NODE_SET_PROTOTYPE_METHOD(constructor, "readFileSync", readFileSync);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "readFileSyncIndex", readFileSyncIndex);
     NODE_SET_PROTOTYPE_METHOD(constructor, "readFile", readFile);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "readFileIndex", readFileIndex);
 
     // properties
     constructor->InstanceTemplate()->SetAccessor(String::NewSymbol("count"), get_prop);
@@ -169,10 +171,69 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
     return scope.Close(retbuf->handle_);
 }
 
+Handle<Value> ZipFile::readFileSyncIndex(const Arguments& args)
+{
+    HandleScope scope;
+
+    if (args.Length() != 1 || !args[0]->IsNumber())
+        return ThrowException(Exception::TypeError(
+          String::New("first argument must be a index")));
+
+    std::string idx_str = TOSTR(args[0]);
+    int idx = atoi(idx_str.c_str());
+  
+    // TODO - enforce valid index
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+
+    struct zip_file *zf_ptr;
+
+
+    if (idx < 0 || idx >= (signed int)zf->names_.size()) {
+        std::stringstream s;
+        s << "Index exceeds file counts\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+    
+    if ((zf_ptr=zip_fopen_index(zf->archive_, idx, 0)) == NULL) {
+        zip_fclose(zf_ptr);
+        std::stringstream s;
+        s << "cannot open file #" << idx << ": archive error: " << zip_strerror(zf->archive_) << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    struct zip_stat st;
+    zip_stat_index(zf->archive_, idx, 0, &st);
+  
+    std::vector<unsigned char> data;
+    data.clear();
+    data.resize( st.size );
+    
+    int result =  0;
+    result = (int)zip_fread( zf_ptr, reinterpret_cast<void*> (&data[0]), data.size() );
+
+    if (result < 0) {
+        zip_fclose(zf_ptr);
+        std::stringstream s;
+        s << "error reading file #" << idx << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    #if NODE_VERSION_AT_LEAST(0,3,0)
+        node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
+    #else
+        node::Buffer *retbuf = Buffer::New(data.size());
+        std::memcpy(retbuf->data(), (char *)&data[0], data.size());
+    #endif
+    
+    zip_fclose(zf_ptr);
+    return scope.Close(retbuf->handle_);
+}
+
 typedef struct {
     ZipFile* zf;
     struct zip *za;
     std::string name;
+    int idx;
     bool error;
     std::string error_name;
     std::vector<unsigned char> data;
@@ -222,6 +283,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     closure->za = za;
     closure->error = false;
     closure->name = name;
+    closure->idx = -1;
     closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[args.Length()-1]));
     eio_custom(EIO_ReadFile, EIO_PRI_DEFAULT, EIO_AfterReadFile, closure);
     ev_ref(EV_DEFAULT_UC);
@@ -229,6 +291,62 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     return Undefined();
 }
 
+Handle<Value> ZipFile::readFileIndex(const Arguments& args)
+{
+    HandleScope scope;
+
+    if (args.Length() < 2)
+        return ThrowException(Exception::TypeError(
+          String::New("requires two arguments, the name of a file and a callback")));
+    
+    // first arg must be name
+    if(!args[0]->IsNumber())
+        return ThrowException(Exception::TypeError(
+          String::New("first argument must be a index")));
+    
+    // last arg must be function callback
+    if (!args[args.Length()-1]->IsFunction())
+        return ThrowException(Exception::TypeError(
+                  String::New("last argument must be a callback function")));
+  
+    std::string idx_str = TOSTR(args[0]);
+    int idx = atoi(idx_str.c_str());
+  
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+
+    if (idx < 0 || idx >= (signed int)zf->names_.size()) {
+        std::stringstream s;
+        s << "Index exceeds file counts\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    closure_t *closure = new closure_t();
+
+    // libzip is not threadsafe so we cannot use the zf->archive_
+    // instead we open a new zip archive for each thread
+    struct zip *za;
+    int err;
+    char errstr[1024];
+    if ((za=zip_open(zf->file_name_.c_str() , 0, &err)) == NULL) {
+        zip_error_to_str(errstr, sizeof(errstr), err, errno);
+        std::stringstream s;
+        s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
+        zip_close(za);
+        return ThrowException(Exception::Error(
+            String::New(s.str().c_str())));
+    }
+
+    closure->zf = zf;
+    closure->za = za;
+    closure->error = false;
+    closure->name = "";
+    closure->idx = idx;
+    closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[args.Length()-1]));
+    eio_custom(EIO_ReadFile, EIO_PRI_DEFAULT, EIO_AfterReadFile, closure);
+    ev_ref(EV_DEFAULT_UC);
+    zf->Ref();
+    return Undefined();
+}
 
 int ZipFile::EIO_ReadFile(eio_req *req)
 {
@@ -236,13 +354,15 @@ int ZipFile::EIO_ReadFile(eio_req *req)
 
     struct zip_file *zf_ptr=NULL;
 
-    int idx = -1;
+    int idx = closure->idx;
     
-    std::vector<std::string>::iterator it = std::find(closure->zf->names_.begin(),
-                                            closure->zf->names_.end(), 
-                                            closure->name);
-    if (it!=closure->zf->names_.end()) {
-        idx = distance(closure->zf->names_.begin(), it);
+    if (idx == -1) {
+      std::vector<std::string>::iterator it = std::find(closure->zf->names_.begin(),
+                                              closure->zf->names_.end(), 
+                                              closure->name);
+      if (it!=closure->zf->names_.end()) {
+          idx = distance(closure->zf->names_.begin(), it);
+      }
     }
 
     if (idx == -1) {
