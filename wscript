@@ -2,7 +2,7 @@ import os
 from glob import glob
 from os import unlink, symlink, popen, uname, environ
 from os.path import exists
-from shutil import copy2 as copy
+from shutil import copy2 as copy, rmtree
 from subprocess import call
 
 # http://www.freehackers.org/~tnagy/wafbook/index.html
@@ -16,6 +16,9 @@ TARGET_FILE = '%s.node' % TARGET
 built = 'build/default/%s' % TARGET_FILE
 dest = 'lib/%s' % TARGET_FILE
 settings = 'lib/settings.js'
+BUNDLED_LIBZIP_VERSION = '0.10'
+BUNDLED_LIBZIP = 'libzip-%s' % BUNDLED_LIBZIP_VERSION
+BUNDLED_LIBZIP_TAR = 'libzip-%s.tar.bz2' % BUNDLED_LIBZIP_VERSION
 
 def set_options(opt):
     opt.tool_options("compiler_cxx")
@@ -38,10 +41,10 @@ def configure_libzip():
 	if not Options.options.shared_libzip:
 	    Utils.pprint('GREEN','configuring internal libzip dep')
 	    os.chdir('deps')
-	    if not os.path.exists('libzip-0.9.3'):
-	        os.system('tar xvf libzip-0.9.3.tar.bz2')
-	    os.chdir('libzip-0.9.3')
-	    os.system("CFLAGS='-fPIC' ./configure --disable-dependency-tracking --enable-static --disable-shared")
+	    if not os.path.exists(BUNDLED_LIBZIP):
+	        os.system('tar xvf %s' % BUNDLED_LIBZIP_TAR)
+	    os.chdir(BUNDLED_LIBZIP)
+	    os.system("CFLAGS='-fPIC -03 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared")
 	    os.chdir('../../')
 
 def configure(conf):
@@ -87,15 +90,15 @@ def configure(conf):
     
     elif not shared_libzip:
         auto_configured = True
-        libzip_includes = ['-I../deps/libzip-0.9.3/lib']
-        libzip_libpath  = ['../deps/libzip-0.9.3/lib/.libs/libzip.a']
+        libzip_includes = ['-I../deps/%s/lib' % BUNDLED_LIBZIP]
+        libzip_libpath  = ['../deps/%s/lib/.libs/libzip.a' % BUNDLED_LIBZIP]
         
     if not auto_configured:
         if not conf.check_cxx(lib='zip', header_name='zip.h',
                               uselib_store='ZIP',
                               includes=libzip_includes,
                               libpath=libzip_libpath):
-            conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'http://nih.at/libzip/libzip-0.9.3.tar.bz2'\n  (see README.md for more info)\n")
+            conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'http://nih.at/libzip/'\n  (see README.md for more info)\n")
         else:
             Utils.pprint('GREEN', 'Sweet, found viable libzip depedency')
     
@@ -112,7 +115,10 @@ def configure(conf):
                new_inc.append('-L%s' % i)
         libzip_libpath = new_inc
 
-    linkflags = libzip_libpath
+    linkflags = []
+    if os.environ.has_key('LINKFLAGS'):
+        linkflags = os.environ['LINKFLAGS'].split(' ')
+    linkflags.extend(libzip_libpath)
     if shared_libzip:
         if '-lzip' not in linkflags:
             linkflags.append('-lzip')
@@ -122,8 +128,6 @@ def configure(conf):
     conf.env.append_value("LINKFLAGS", linkflags)
     
     cxxflags = libzip_includes
-    #cxxflags.append('-I/usr/local/include')
-    #cxxflags.append('-I/usr/local/lib/libzip/include/')
 
     conf.env.append_value("CXXFLAGS", cxxflags)
     
@@ -132,7 +136,7 @@ def configure(conf):
 
 def build_libzip():
 	if not Options.options.shared_libzip:
-		os.chdir('deps/libzip-0.9.3')
+		os.chdir('deps/%s' % BUNDLED_LIBZIP)
 		os.system('make')
 		os.chdir('../../')
 
@@ -153,9 +157,10 @@ def build(bld):
 
 def clean_libzip():
 	if not Options.options.shared_libzip:
-		os.chdir('deps/libzip-0.9.3')
-		os.system('make clean distclean')
-		os.chdir('../../')
+		rmtree('deps/%s' % BUNDLED_LIBZIP)
+
+def clean(bld):
+    pass # to avoid "Nothing to clean (project not configured)" error
 
 def shutdown():
     if Options.commands['clean']:

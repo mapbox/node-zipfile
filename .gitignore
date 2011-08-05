@@ -4,4 +4,4 @@ build
 *.o
 *.a
 lib/_zipfile.node
-deps/libzip-0.9.3/
+deps/libzip-*/
