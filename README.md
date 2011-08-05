@@ -24,8 +24,12 @@
 
 
 ## Installation
+
+  You can install the latest tag via npm:
   
-  Install node-zipfile:
+    $ npm install zipfile
+  
+  Or install from github master:
   
     $ git clone git://github.com/springmeyer/node-zipfile.git
     $ cd node-zipfile
@@ -33,21 +37,13 @@
     $ make
     $ make install
 
-  Make sure the node modules are on your path:
-  
-    export NODE_PATH=/usr/local/lib/node/
-
-  Or you can install via npm:
-  
-    $ npm install zipfile
-
 
 ## Dynamically linking against libzip
 
   node-zipfile depends on libzip, but by default
   bundles a copy in deps/ which is statically linked.
   
-  If you which to use an external libzip fir install it:
+  If you want to use an external libzip first install it:
   
   Debian:
   
@@ -59,9 +55,9 @@
   
   Or from source:
 
-    $ wget http://nih.at/libzip/libzip-0.9.3.tar.bz2
-    $ tar xvf libzip-0.9.3.tar.bz2
-    $ cd libzip-0.9.3
+    $ wget http://nih.at/libzip/libzip-0.10.tar.bz2
+    $ tar xvf libzip-0.10.tar.bz2
+    $ cd libzip-0.10
     $ ./configure
     $ make
     $ sudo make install
