@@ -51,7 +51,7 @@ def configure_libzip():
 	    if os.environ.has_key('CXXFLAGS'):
 	        cxxflags += os.environ['CXXFLAGS']
 	    # LINKFLAGS appear to be picked up automatically...
-	    os.system("CFLAGS='%s -fPIC -03 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared" % cxxflags)
+	    os.system("CFLAGS='%s -fPIC -O3 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared" % cxxflags)
 	    os.chdir('../../')
 
 def configure(conf):
