@@ -44,7 +44,14 @@ def configure_libzip():
 	    if not os.path.exists(BUNDLED_LIBZIP):
 	        os.system('tar xvf %s' % BUNDLED_LIBZIP_TAR)
 	    os.chdir(BUNDLED_LIBZIP)
-	    os.system("CFLAGS='-fPIC -03 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared")
+	    cxxflags = ''
+	    if os.environ.has_key('CFLAGS'):
+	        cxxflags += os.environ['CFLAGS']
+	        cxxflags += ' '
+	    if os.environ.has_key('CXXFLAGS'):
+	        cxxflags += os.environ['CXXFLAGS']
+	    # LINKFLAGS appear to be picked up automatically...
+	    os.system("CFLAGS='%s -fPIC -03 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared" % cxxflags)
 	    os.chdir('../../')
 
 def configure(conf):
@@ -122,6 +129,8 @@ def configure(conf):
     if shared_libzip:
         if '-lzip' not in linkflags:
             linkflags.append('-lzip')
+    else:
+        linkflags.append('-Wl,-search_paths_first')
     if '-lz' not in linkflags:
         linkflags.append('-lz')
 
