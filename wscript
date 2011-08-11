@@ -38,21 +38,21 @@ def set_options(opt):
                   )
 
 def configure_libzip():
-	if not Options.options.shared_libzip:
-	    Utils.pprint('GREEN','configuring internal libzip dep')
-	    os.chdir('deps')
-	    if not os.path.exists(BUNDLED_LIBZIP):
-	        os.system('tar xvf %s' % BUNDLED_LIBZIP_TAR)
-	    os.chdir(BUNDLED_LIBZIP)
-	    cxxflags = ''
-	    if os.environ.has_key('CFLAGS'):
-	        cxxflags += os.environ['CFLAGS']
-	        cxxflags += ' '
-	    if os.environ.has_key('CXXFLAGS'):
-	        cxxflags += os.environ['CXXFLAGS']
-	    # LINKFLAGS appear to be picked up automatically...
-	    os.system("CFLAGS='%s -fPIC -O3 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared" % cxxflags)
-	    os.chdir('../../')
+    if not Options.options.shared_libzip:
+        Utils.pprint('GREEN','configuring internal libzip dep')
+        os.chdir('deps')
+        if not os.path.exists(BUNDLED_LIBZIP):
+            os.system('tar xvf %s' % BUNDLED_LIBZIP_TAR)
+        os.chdir(BUNDLED_LIBZIP)
+        cxxflags = ''
+        if os.environ.has_key('CFLAGS'):
+            cxxflags += os.environ['CFLAGS']
+            cxxflags += ' '
+        if os.environ.has_key('CXXFLAGS'):
+            cxxflags += os.environ['CXXFLAGS']
+        # LINKFLAGS appear to be picked up automatically...
+        os.system("CFLAGS='%s -fPIC -O3 -DNDEBUG -Wall' ./configure --disable-dependency-tracking --enable-static --disable-shared" % cxxflags)
+        os.chdir('../../')
 
 def configure(conf):
     conf.check_tool("compiler_cxx")
@@ -144,10 +144,10 @@ def configure(conf):
     #conf.env.append_value("LDFLAGS", ldflags)
 
 def build_libzip():
-	if not Options.options.shared_libzip:
-		os.chdir('deps/%s' % BUNDLED_LIBZIP)
-		os.system('make')
-		os.chdir('../../')
+    if not Options.options.shared_libzip:
+        os.chdir('deps/%s' % BUNDLED_LIBZIP)
+        os.system('make')
+        os.chdir('../../')
 
 def build(bld):
     obj = bld.new_task_gen("cxx", "shlib", "node_addon", install_path=None)
@@ -165,8 +165,8 @@ def build(bld):
     bld.install_files('${PREFIX_NODE}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
 
 def clean_libzip():
-	if not Options.options.shared_libzip:
-		rmtree('deps/%s' % BUNDLED_LIBZIP)
+    if not Options.options.shared_libzip:
+      rmtree('deps/%s' % BUNDLED_LIBZIP)
 
 def clean(bld):
     pass # to avoid "Nothing to clean (project not configured)" error
