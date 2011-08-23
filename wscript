@@ -107,7 +107,7 @@ def configure(conf):
                               libpath=libzip_libpath):
             conf.fatal("\n\n  Cannot find libzip, required for node-zipfile,\n  please install from:\n  'http://nih.at/libzip/'\n  (see README.md for more info)\n")
         else:
-            Utils.pprint('GREEN', 'Sweet, found viable libzip depedency')
+            Utils.pprint('GREEN', 'Sweet, found viable libzip dependency')
     
         # strip paths that don't exist, turn into proper flags
         new_inc = []
