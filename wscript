@@ -129,8 +129,9 @@ def configure(conf):
     if shared_libzip:
         if '-lzip' not in linkflags:
             linkflags.append('-lzip')
-    else:
+    elif Options.platform == 'darwin':
         linkflags.append('-Wl,-search_paths_first')
+    
     if '-lz' not in linkflags:
         linkflags.append('-lz')
 
