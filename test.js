@@ -31,7 +31,6 @@ assert.throws(function() { zf.readFileSync('foo')});
 
 var zf = new zipfile.ZipFile('./data/world_merc.zip');
 
-
 function mkdirP(p, mode, f) {
     var cb = f || function() {};
     // if relative
@@ -49,47 +48,24 @@ function mkdirP(p, mode, f) {
     });
 }
 
-// test writing with Sync reading method
-// and sync node writing functions
-zf.names.forEach(function(name) {
-    var uncompressed = path.join('/tmp/sync', name);
-    var dirname = path.dirname(uncompressed);
-    mkdirP(dirname, 0755 , function(err) {
-        if (err && err.errno != constants.EEXIST) throw err;
-        if (path.extname(name)) {
-            var buffer = zf.readFileSync(name);
-            fd = fs.openSync(uncompressed, 'w');
-            fs.writeSync(fd, buffer, 0, buffer.length, null);
-            fs.closeSync(fd);
-        }
-    });
-});
-
-
 // test writing with Async reading method
 // and async node writing functions
-zf.names.forEach(function(name) {
+names = zf.names.slice(0);
+function asyncDecompress(cb) {
+    if (names.length == 0) 
+      return;
+    var name = names.shift();
+    console.log("Decompressing " + name);
     var uncompressed = path.join('/tmp/async', name);
     var dirname = path.dirname(uncompressed);
     mkdirP(dirname, 0755 , function(err) {
         if (err && err.errno != constants.EEXIST) throw err;
         if (path.extname(name)) {
-            zf.readFile(name, function(err, buffer) {
-                if (err) throw err;
-                fs.open(uncompressed, 'w', 0755, function(err,fd) {
-                    if (err) throw err;
-                    fs.write(fd, buffer, 0, buffer.length, null, function(err,written) {
-                         if (err) throw err;
-                         // written is number of bytes written
-                         assert.ok(written > 0);
-                         fs.close(fd, function(err) {
-                             if (err) throw err;
-                         });
-                    });
-                });
-            });
+            zip_stream = zipfile.createReadStream(zf, name);
+            file_stream = fs.createWriteStream(uncompressed);
+            zip_stream.pipe(file_stream);
+            zip_stream.on('end', asyncDecompress);
         }
     });
-});
-
-console.log('All tests pass...');
+};
+asyncDecompress();
