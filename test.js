@@ -52,8 +52,10 @@ function mkdirP(p, mode, f) {
 // and async node writing functions
 names = zf.names.slice(0);
 function asyncDecompress(cb) {
-    if (names.length == 0) 
+    if (names.length == 0) {
+      cb();
       return;
+    }
     var name = names.shift();
     console.log("Decompressing " + name);
     var uncompressed = path.join('/tmp/async', name);
@@ -64,8 +66,38 @@ function asyncDecompress(cb) {
             zip_stream = zipfile.createReadStream(zf, name);
             file_stream = fs.createWriteStream(uncompressed);
             zip_stream.pipe(file_stream);
-            zip_stream.on('end', asyncDecompress);
+            zip_stream.on('close', function () { asyncDecompress(cb)});
         }
     });
 };
-asyncDecompress();
+
+try { fs.unlinkSync('/tmp/compress.zip'); }
+catch (err) {}
+var new_zf = new zipfile.ZipFile('/tmp/compress.zip');
+
+function asyncCompress() {
+    zf.names.forEach(function (name) { 
+      console.log("Adding " + name);
+      var uncompressed = path.join('/tmp/async', name);
+      zipfile.addFile(new_zf, name, uncompressed);
+    });
+    zipfile.save(new_zf, function (err) {
+      if (err) 
+        console.log("Error while saving file: " + err);
+      else {
+        zf.names.forEach(function (name) {
+          console.log("Replacing " + name);
+          var uncompressed = path.join('/tmp/async', name);
+          zipfile.replaceFile(new_zf, name, uncompressed);
+        });
+        zipfile.save(new_zf, function (err) {
+          if (err) console.log("Error while saving file: " + err);
+          else console.log("All test passed!");
+        });
+      }
+    });
+}
+
+
+
+asyncDecompress(asyncCompress);
