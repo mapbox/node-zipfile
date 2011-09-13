@@ -85,7 +85,7 @@ function asyncCompress() {
       if (err) 
         console.log("Error while saving file: " + err);
       else {
-        zf.names.forEach(function (name) {
+        new_zf.names.forEach(function (name) {
           console.log("Replacing " + name);
           var uncompressed = path.join('/tmp/async', name);
           zipfile.replaceFile(new_zf, name, uncompressed);

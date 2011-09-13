@@ -454,11 +454,10 @@ void ZipFile::Save_Callback(EV_P_ ev_async *watcher, int revents)
     // Now, let's do some janitoring !
     saving_closures.erase(save);
     if (save->error != NULL) delete save->error;
+    ev_unref(EV_DEFAULT_UC);
     save->zf->Unref();
     save->save_cb.Dispose();
     pthread_mutex_destroy(&save->mutex);
     delete save;
   }
-
-  ev_unref(EV_DEFAULT_UC);
 }
