@@ -27,7 +27,7 @@ void ZipFile::Initialize(Handle<Object> target) {
     // functions
     NODE_SET_PROTOTYPE_METHOD(constructor, "open", Open);
     NODE_SET_PROTOTYPE_METHOD(constructor, "read", Read);
-    //NODE_SET_PROTOTYPE_METHOD(constructor, "readFileSync", readFileSync);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "readFileSync", readFileSync);
     NODE_SET_PROTOTYPE_METHOD(constructor, "close", Close);
     NODE_SET_PROTOTYPE_METHOD(constructor, "addFile", Add_File);
     NODE_SET_PROTOTYPE_METHOD(constructor, "replaceFile", Replace_File);
@@ -183,6 +183,72 @@ Handle<Value> ZipFile::Close(const Arguments& args)
     zf->file = NULL;
 
     return Undefined();
+}
+
+Handle<Value> ZipFile::readFileSync(const Arguments& args)
+{
+    HandleScope scope;
+
+    if (args.Length() != 1 || !args[0]->IsString())
+        return ThrowException(Exception::TypeError(
+          String::New("first argument must be a file name inside the zip")));
+
+    std::string name = TOSTR(args[0]);
+  
+    // TODO - enforce valid index
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+
+    if (zf->Busy())
+      return ThrowException(Exception::Error(String::New("Zipfile already in use..")));
+
+    struct zip_file *zf_ptr;
+
+    int idx = -1;
+    
+    std::vector<std::string>::iterator it = std::find(zf->names.begin(), zf->names.end(), name);
+    if (it!=zf->names.end()) {
+        idx = distance(zf->names.begin(), it);
+    }
+
+    if (idx == -1) {
+        std::stringstream s;
+        s << "No file found by the name of: '" << name << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    if ((zf_ptr=zip_fopen_index(zf->archive, idx, 0)) == NULL) {
+        zip_fclose(zf_ptr);
+        std::stringstream s;
+        s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(zf->archive) << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    struct zip_stat st;
+    zip_stat_index(zf->archive, idx, 0, &st);
+  
+    std::vector<unsigned char> data;
+    data.clear();
+    data.resize( st.size );
+    
+    int result =  0;
+    result = (int)zip_fread( zf_ptr, reinterpret_cast<void*> (&data[0]), data.size() );
+
+    if (result < 0) {
+        zip_fclose(zf_ptr);
+        std::stringstream s;
+        s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
+        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    #if NODE_VERSION_AT_LEAST(0,3,0)
+        node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
+    #else
+        node::Buffer *retbuf = Buffer::New(data.size());
+        std::memcpy(retbuf->data(), (char *)&data[0], data.size());
+    #endif
+    
+    zip_fclose(zf_ptr);
+    return scope.Close(retbuf->handle_);
 }
 
 /* zipfile.read(buffer, pos, len, cb) -> cb(bytesRead, error) */

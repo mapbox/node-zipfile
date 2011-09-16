@@ -30,16 +30,16 @@ class ZipFile: public node::ObjectWrap {
                          const AccessorInfo& info);
 
     // Sync
-    //static Handle<Value> readFileSync(const Arguments& args);
-    
-    // Async
     static Handle<Value> Open(const Arguments& args);
+    static Handle<Value> readFileSync(const Arguments& args);
+    static Handle<Value> Close(const Arguments& args);
+    static Handle<Value> Add_File(const Arguments& args);
+    static Handle<Value> Replace_File(const Arguments& args); 
+
+    // Async
     static Handle<Value> Read(const Arguments& args);
     static int EIO_Read(eio_req *req);
     static int EIO_AfterRead(eio_req *req);
-    static Handle<Value> Close(const Arguments& args);
-    static Handle<Value> Add_File(const Arguments& args);
-    static Handle<Value> Replace_File(const Arguments& args);
     static Handle<Value> Save(const Arguments& args);
     static void *Save_Thread(void *data);
     static void Save_Callback(EV_P_ ev_async *watcher, int revents);

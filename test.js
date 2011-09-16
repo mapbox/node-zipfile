@@ -27,6 +27,7 @@ var zf = new zipfile.ZipFile('./data/folder.zip');
 assert.equal(zf.count, 3); // one folder, two files
 assert.deepEqual(zf.names, ['folder/', 'folder/one.txt', 'folder/two.txt']);
 
+var data = zf.readFileSync('folder/one.txt')
 assert.throws(function() { zf.readFileSync('foo')});
 
 var zf = new zipfile.ZipFile('./data/world_merc.zip');
