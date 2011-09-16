@@ -25,13 +25,13 @@ void ZipFile::Initialize(Handle<Object> target) {
     constructor->SetClassName(String::NewSymbol("ZipFile"));
 
     // functions
+    NODE_SET_PROTOTYPE_METHOD(constructor, "open", Open);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "read", Read);
     //NODE_SET_PROTOTYPE_METHOD(constructor, "readFileSync", readFileSync);
-    NODE_SET_METHOD(target, "open", Open);
-    NODE_SET_METHOD(target, "read", Read);
-    NODE_SET_METHOD(target, "close", Close);
-    NODE_SET_METHOD(target, "addFile", Add_File);
-    NODE_SET_METHOD(target, "replaceFile", Replace_File);
-    NODE_SET_METHOD(target, "save", Save);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "close", Close);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "addFile", Add_File);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "replaceFile", Replace_File);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
 
     // properties
     constructor->InstanceTemplate()->SetAccessor(String::NewSymbol("count"), get_prop);
@@ -49,6 +49,7 @@ ZipFile::ZipFile(std::string const& file_name) :
   file_name(file_name),
   archive(),
   file(NULL),
+  file_index(-1),
   saving(false),
   names() {}
 
@@ -130,36 +131,36 @@ Handle<Value> ZipFile::get_prop(Local<String> property,
 
 Handle<Value> ZipFile::Open(const Arguments& args)
 {
-    if (args.Length() != 2 || !args[1]->IsString())
+    if (args.Length() != 1 || !args[0]->IsString())
         return ThrowException(Exception::TypeError(
           String::New("Argument must be a file name inside the zip")));
 
-    std::string name = TOSTR(args[1]);
+    std::string name = TOSTR(args[0]);
   
     // TODO - enforce valid index
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args[0]->ToObject());
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     if (zf->Busy())
       return ThrowException(Exception::Error(String::New("Zipfile already in use..")));
 
-    int idx = -1;
-    
+    zf->file_index = -1;
+
     std::vector<std::string>::iterator it = std::find(zf->names.begin(), zf->names.end(), name);
     if (it!=zf->names.end()) {
-        idx = distance(zf->names.begin(), it);
+        zf->file_index = distance(zf->names.begin(), it);
     }
 
-    if (idx == -1) {
+    if (zf->file_index == -1) {
         std::stringstream s;
         s << "No file found by the name of: '" << name << "\n";
         return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
-    if ((zf->file=zip_fopen_index(zf->archive, idx, 0)) == NULL) {
+    if ((zf->file=zip_fopen_index(zf->archive, zf->file_index, 0)) == NULL) {
         zip_fclose(zf->file);
         zf->file = NULL;
         std::stringstream s;
-        s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(zf->archive) << "\n";
+        s << "cannot open file #" << zf->file_index << " in " << name << ": archive error: " << zip_strerror(zf->archive) << "\n";
         return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
@@ -168,7 +169,7 @@ Handle<Value> ZipFile::Open(const Arguments& args)
 
 Handle<Value> ZipFile::Close(const Arguments& args)
 {
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args[0]->ToObject());
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     if (zf->file == NULL)
       return ThrowException(Exception::Error(String::New("No file opened!")));
@@ -187,29 +188,29 @@ Handle<Value> ZipFile::Close(const Arguments& args)
 /* zipfile.read(buffer, pos, len, cb) -> cb(bytesRead, error) */
 Handle<Value> ZipFile::Read(const Arguments& args)
 {
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args[0]->ToObject());
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
-    if (!Buffer::HasInstance(args[1])) {
+    if (!Buffer::HasInstance(args[0])) {
       return ThrowException(Exception::Error(
-                  String::New("Second argument needs to be a buffer")));
+                  String::New("First argument needs to be a buffer")));
     }
-    Local<Object> buffer_obj = args[1]->ToObject();
+    Local<Object> buffer_obj = args[0]->ToObject();
     char *buffer_data = Buffer::Data(buffer_obj);
     size_t buffer_length = Buffer::Length(buffer_obj);
 
-    zip_uint64_t off = args[2]->Int32Value();
+    zip_uint64_t off = args[1]->Int32Value();
     if (off >= buffer_length) {
       return ThrowException(Exception::Error(
             String::New("Offset is out of bounds")));
     }
 
-    zip_uint64_t len = args[3]->Int32Value();
+    zip_uint64_t len = args[2]->Int32Value();
     if (off + len > buffer_length) {
       return ThrowException(Exception::Error(
             String::New("Length is extends beyond buffer")));
     }
 
-    Local<Value> cb = args[4];
+    Local<Value> cb = args[3];
     if (!cb->IsFunction())
       return ThrowException(Exception::Error(
             String::New("Fourth argument should be a callback function.")));
@@ -219,7 +220,7 @@ Handle<Value> ZipFile::Read(const Arguments& args)
     closure->read = 0;
     closure->data = buffer_data+off;
     closure->len = len;
-    closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[4]));
+    closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[3]));
 
     eio_custom(EIO_Read, EIO_PRI_DEFAULT, EIO_AfterRead, closure);
     zf->Ref();
@@ -264,28 +265,41 @@ int ZipFile::EIO_AfterRead(eio_req *req)
     return 0;
 }
 
-/* zipfile.addFile(zipfile, nameInArchive, name, offset, len) */
+/* zipfile.addFile(nameInArchive, name, offset, len) */
 Handle<Value> ZipFile::Add_File(const Arguments& args)
 {
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args[0]->ToObject());
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     struct zip_source *source;
 
     if (zf->Busy())
       return ThrowException(Exception::Error(String::New("Zipfile already in use..")));
 
-    if (!args[1]->IsString())
+    if (!args[0]->IsString())
       return ThrowException(Exception::TypeError(
                  String::New("Argument must be a file name.")));
-    std::string archive_file = TOSTR(args[1]);
+    std::string archive_file = TOSTR(args[0]);
 
-    if (!args[2]->IsString())
-      return ThrowException(Exception::TypeError(
-                 String::New("Argument must be a file name.")));
-    std::string name = TOSTR(args[2]);
+    std::string name;
+    if (args[1]->IsUndefined())
+      name = archive_file;
+    else
+      if (!args[1]->IsString())
+        return ThrowException(Exception::TypeError(
+                   String::New("Argument must be a file name.")));
+      name = TOSTR(args[1]);
 
-    zip_int64_t off = args[3]->Int32Value();
-    zip_int64_t len = args[4]->Int32Value();
+    zip_int64_t off;
+    if (args[2]->IsUndefined())
+      off = 0;
+    else
+      off = args[2]->Int32Value();
+
+    zip_int64_t len;
+    if (args[3]->IsUndefined())
+      len = -1;
+    else
+      len = args[3]->Int32Value();
 
     source = zip_source_file(zf->archive, name.c_str(), off, len);
     if (source == NULL) {
@@ -307,28 +321,41 @@ Handle<Value> ZipFile::Add_File(const Arguments& args)
     return Undefined();
 }
 
-/* zipfile.replaceFile(zipfile, nameInArchive, name, offset, len) */
+/* zipfile.replaceFile(nameInArchive, name, offset, len) */
 Handle<Value> ZipFile::Replace_File(const Arguments& args)
 {
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args[0]->ToObject());
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     struct zip_source *source;
 
     if (zf->Busy())
       return ThrowException(Exception::Error(String::New("Zipfile already in use..")));
 
-    if (!args[1]->IsString())
+    if (!args[0]->IsString())
       return ThrowException(Exception::TypeError(
                  String::New("Argument must be a file name.")));
-    std::string archive_file = TOSTR(args[1]);
+    std::string archive_file = TOSTR(args[0]);
 
-    if (!args[2]->IsString())
-      return ThrowException(Exception::TypeError(
-                 String::New("Argument must be a file name.")));
-    std::string name = TOSTR(args[2]);
+    std::string name;
+    if (args[1]->IsUndefined())
+      name = archive_file;
+    else
+      if (!args[1]->IsString())
+        return ThrowException(Exception::TypeError(
+                   String::New("Argument must be a file name.")));
+      name = TOSTR(args[1]);
 
-    zip_int64_t off = args[3]->Int32Value();
-    zip_int64_t len = args[4]->Int32Value();
+    zip_int64_t off;
+    if (args[2]->IsUndefined())
+      off = 0;
+    else
+      off = args[2]->Int32Value();
+    
+    zip_int64_t len; 
+    if (args[3]->IsUndefined()) 
+      len = -1; 
+    else 
+      len = args[3]->Int32Value();
 
     int idx = -1;
     
@@ -387,15 +414,15 @@ void *ZipFile::Save_Thread(void *data) {
     return NULL;
 }
 
-/* zipfile.save(zipfile, callback) */
+/* zipfile.save(callback) */
 Handle<Value> ZipFile::Save(const Arguments& args)
 {
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args[0]->ToObject());
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     if (zf->Busy())
       return ThrowException(Exception::Error(String::New("Zipfile already in use..")));
 
-    Local<Value> cb = args[1];
+    Local<Value> cb = args[0];
     if (!cb->IsFunction())
       return ThrowException(Exception::Error(
             String::New("Second argument should be a callback function.")));

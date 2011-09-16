@@ -50,6 +50,7 @@ class ZipFile: public node::ObjectWrap {
     std::string const file_name;
     struct zip *archive;
     struct zip_file *file;
+    int file_index;
     bool saving;
 
   private:

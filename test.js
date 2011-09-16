@@ -63,7 +63,7 @@ function asyncDecompress(cb) {
     mkdirP(dirname, 0755 , function(err) {
         if (err && err.errno != constants.EEXIST) throw err;
         if (path.extname(name)) {
-            zip_stream = zipfile.createReadStream(zf, name);
+            zip_stream = zf.createReadStream(name);
             file_stream = fs.createWriteStream(uncompressed);
             zip_stream.pipe(file_stream);
             zip_stream.on('close', function () { asyncDecompress(cb)});
@@ -79,18 +79,18 @@ function asyncCompress() {
     zf.names.forEach(function (name) { 
       console.log("Adding " + name);
       var uncompressed = path.join('/tmp/async', name);
-      zipfile.addFile(new_zf, name, uncompressed);
+      new_zf.addFile(name, uncompressed);
     });
-    zipfile.save(new_zf, function (err) {
+    new_zf.save(function (err) {
       if (err) 
         console.log("Error while saving file: " + err);
       else {
         new_zf.names.forEach(function (name) {
           console.log("Replacing " + name);
           var uncompressed = path.join('/tmp/async', name);
-          zipfile.replaceFile(new_zf, name, uncompressed);
+          new_zf.replaceFile(name, uncompressed);
         });
-        zipfile.save(new_zf, function (err) {
+        new_zf.save(function (err) {
           if (err) console.log("Error while saving file: " + err);
           else console.log("All test passed!");
         });
