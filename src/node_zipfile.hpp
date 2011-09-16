@@ -35,6 +35,7 @@ class ZipFile: public node::ObjectWrap {
     static Handle<Value> Close(const Arguments& args);
     static Handle<Value> Add_File(const Arguments& args);
     static Handle<Value> Replace_File(const Arguments& args); 
+    static Handle<Value> Add_Directory(const Arguments& args);
 
     // Async
     static Handle<Value> Read(const Arguments& args);

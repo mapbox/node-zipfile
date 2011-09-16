@@ -80,7 +80,8 @@ function asyncCompress() {
     zf.names.forEach(function (name) { 
       console.log("Adding " + name);
       var uncompressed = path.join('/tmp/async', name);
-      new_zf.addFile(name, uncompressed);
+      var compressed = path.join('tmp/async', name);
+      new_zf.addFile(compressed, uncompressed);
     });
     new_zf.save(function (err) {
       if (err) 
@@ -88,9 +89,11 @@ function asyncCompress() {
       else {
         new_zf.names.forEach(function (name) {
           console.log("Replacing " + name);
-          var uncompressed = path.join('/tmp/async', name);
+          var uncompressed = '/' + name;
           new_zf.replaceFile(name, uncompressed);
         });
+        new_zf.addDirectory("tmp");
+        new_zf.addDirectory("tmp/async");
         new_zf.save(function (err) {
           if (err) console.log("Error while saving file: " + err);
           else console.log("All test passed!");
@@ -98,7 +101,5 @@ function asyncCompress() {
       }
     });
 }
-
-
 
 asyncDecompress(asyncCompress);

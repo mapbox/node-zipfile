@@ -31,6 +31,7 @@ void ZipFile::Initialize(Handle<Object> target) {
     NODE_SET_PROTOTYPE_METHOD(constructor, "close", Close);
     NODE_SET_PROTOTYPE_METHOD(constructor, "addFile", Add_File);
     NODE_SET_PROTOTYPE_METHOD(constructor, "replaceFile", Replace_File);
+    NODE_SET_PROTOTYPE_METHOD(constructor, "addDirectory", Add_Directory);
     NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
 
     // properties
@@ -450,6 +451,31 @@ Handle<Value> ZipFile::Replace_File(const Arguments& args)
       s << "Error while replacing file " << name << " in zip archive: " << zip_strerror(zf->archive) << "\n";
       return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
+
+    return Undefined();
+}
+
+/* zipfile.addDirectory(name) */
+Handle<Value> ZipFile::Add_Directory(const Arguments& args)
+{
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+
+    if (zf->Busy())
+      return ThrowException(Exception::Error(String::New("Zipfile already in use..")));
+
+    if (!args[0]->IsString())
+      return ThrowException(Exception::TypeError(
+                 String::New("Argument must be a directory name.")));
+    std::string directory = TOSTR(args[0]);
+
+    int ret = zip_add_dir(zf->archive, directory.c_str());
+    if (ret < 0) {
+      std::stringstream s;
+      s << "Error while adding directory " << directory << " to zip archive: " << zip_strerror(zf->archive) << "\n";
+      return ThrowException(Exception::Error(String::New(s.str().c_str())));
+    }
+
+    zf->GetNames();
 
     return Undefined();
 }
