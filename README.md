@@ -7,14 +7,47 @@
 # Example
 
     > var zipfile = require('zipfile')
+    > var fs = require('fs')
+    > // Open:
     > var zf = new zipfile.ZipFile('./data/world_merc.zip')
     > zf
     { names: [ 'world_merc.dbf', 'world_merc.prj', 'world_merc.shp', 'world_merc.shx' ],
       count: 4 }
+    > // Synchronous read:
     > var buffer = zf.readFileSync('world_merc.prj')
     > buffer.toString()
     'PROJCS["Google Maps Global Mercator",GEOGCS .... '
+    > // Asynchronous read:
+    > var stream = zf.createReadStream('world_merc.prj')
+    > var fstream = fs.createWriteStream('/tmp/world_merc.prj')
+    > stream.pipe(fstream)
+    > // Write:
+    > zf.addDirectory('foo')
+    > zf.addFile('foo/world_merc.prj', '/tmp/world_merc.prj')
+    > zf.save(function (err) {
+    ... if (err)
+    ...   console.log("Error :" + err)
+    ... else
+    ...   console.log("Done")
+    ... })
+    > Done
+    > zf.replaceFile('foo/world_merc.prj', '/tmp/world_merc.prj')
+    > zf.save(...)
 
+
+# Note:
+
+* libzip is not thread-safe. Thus, there can only be one of the following operation at a given time:
+    * `zf.createReadStream`
+    * `zf.readFileSync`
+    * `zf.addFile`
+    * `zf.replaceFile`
+    * `zf.save`
+  Call to `zf.readFileSync`, `zf.addFile, `zf.replaceFile` are synchronous. Upon opening a read stream,
+  the zip archive can be used with another of the operations above one the `'close'` event has been emitted
+  by the stream.
+* Adding and replacing files in the archive are synchronous and return immediatly. Files are actually written
+  when calling `zf.save`, which is asynchronous. 
 
 ## Depends
 
