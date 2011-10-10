@@ -13,6 +13,10 @@
       count: 4 }
     > var buffer = zf.readFileSync('world_merc.prj')
     > buffer.toString()
+    
+    ##Fork add:
+    > var buffer = zf.readFileSyncIndex(4)
+    > buffer.toString()
     'PROJCS["Google Maps Global Mercator",GEOGCS .... '
 
 
