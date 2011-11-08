@@ -13,21 +13,21 @@ using namespace v8;
 
 extern "C" {
 
-  static void init (Handle<Object> target)
-  {
+    static void init (Handle<Object> target)
+    {
 
-    ZipFile::Initialize(target);
+        ZipFile::Initialize(target);
 
-    // node-zipfile version
-    target->Set(String::NewSymbol("version"), String::New("0.3.0"));
+        // node-zipfile version
+        target->Set(String::NewSymbol("version"), String::New("0.3.0"));
 
-    // versions of deps
-    Local<Object> versions = Object::New();
-    versions->Set(String::NewSymbol("node"), String::New(NODE_VERSION+1));
-    versions->Set(String::NewSymbol("v8"), String::New(V8::GetVersion()));
-    target->Set(String::NewSymbol("versions"), versions);
+        // versions of deps
+        Local<Object> versions = Object::New();
+        versions->Set(String::NewSymbol("node"), String::New(NODE_VERSION+1));
+        versions->Set(String::NewSymbol("v8"), String::New(V8::GetVersion()));
+        target->Set(String::NewSymbol("versions"), versions);
 
-  }
+    }
 
-  NODE_MODULE(_zipfile, init);
+    NODE_MODULE(_zipfile, init);
 }

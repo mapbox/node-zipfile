@@ -32,10 +32,10 @@ void ZipFile::Initialize(Handle<Object> target) {
 }
 
 ZipFile::ZipFile(std::string const& file_name)
-  : ObjectWrap(),
-    file_name_(file_name),
-    archive_(),
-    names_() {}
+    : ObjectWrap(),
+      file_name_(file_name),
+      archive_(),
+      names_() {}
 
 ZipFile::~ZipFile() {
     zip_close(archive_);
@@ -50,7 +50,7 @@ Handle<Value> ZipFile::New(const Arguments& args)
 
     if (args.Length() != 1 || !args[0]->IsString())
         return ThrowException(Exception::TypeError(
-          String::New("first argument must be a path to a zipfile")));
+                                                   String::New("first argument must be a path to a zipfile")));
 
     std::string input_file = TOSTR(args[0]);
     struct zip *za;
@@ -61,7 +61,7 @@ Handle<Value> ZipFile::New(const Arguments& args)
         std::stringstream s;
         s << "cannot open file: " << input_file << " error: " << errstr << "\n";
         return ThrowException(Exception::Error(
-            String::New(s.str().c_str())));
+                                               String::New(s.str().c_str())));
     }
 
     ZipFile* zf = new ZipFile(input_file);
@@ -81,23 +81,23 @@ Handle<Value> ZipFile::New(const Arguments& args)
 }
 
 Handle<Value> ZipFile::get_prop(Local<String> property,
-                         const AccessorInfo& info)
+                                const AccessorInfo& info)
 {
     HandleScope scope;
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(info.This());
     std::string a = TOSTR(property);
     if (a == "count") {
-          return scope.Close(Integer::New(zf->names_.size()));
+        return scope.Close(Integer::New(zf->names_.size()));
     }
     if (a == "names") {
-          unsigned num = zf->names_.size();
-          Local<Array> a = Array::New(num);
-          for (unsigned i = 0; i < num; ++i )
-          {
-              a->Set(i,String::New(zf->names_[i].c_str()));
-          }
+        unsigned num = zf->names_.size();
+        Local<Array> a = Array::New(num);
+        for (unsigned i = 0; i < num; ++i )
+            {
+                a->Set(i,String::New(zf->names_[i].c_str()));
+            }
 
-          return scope.Close(a);
+        return scope.Close(a);
     }
     return Undefined();
 }
@@ -108,17 +108,17 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
 
     if (args.Length() != 1 || !args[0]->IsString())
         return ThrowException(Exception::TypeError(
-          String::New("first argument must be a file name inside the zip")));
+                                                   String::New("first argument must be a file name inside the zip")));
 
     std::string name = TOSTR(args[0]);
-  
+
     // TODO - enforce valid index
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     struct zip_file *zf_ptr;
 
     int idx = -1;
-    
+
     std::vector<std::string>::iterator it = std::find(zf->names_.begin(), zf->names_.end(), name);
     if (it!=zf->names_.end()) {
         idx = distance(zf->names_.begin(), it);
@@ -139,11 +139,11 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
 
     struct zip_stat st;
     zip_stat_index(zf->archive_, idx, 0, &st);
-  
+
     std::vector<unsigned char> data;
     data.clear();
     data.resize( st.size );
-    
+
     int result = 0;
     result = static_cast<int>(zip_fread( zf_ptr, reinterpret_cast<void*> (&data[0]), data.size() ));
 
@@ -177,20 +177,20 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
 
     if (args.Length() < 2)
         return ThrowException(Exception::TypeError(
-          String::New("requires two arguments, the name of a file and a callback")));
-    
+                                                   String::New("requires two arguments, the name of a file and a callback")));
+
     // first arg must be name
     if(!args[0]->IsString())
         return ThrowException(Exception::TypeError(
-          String::New("first argument must be a file name inside the zip")));
-    
+                                                   String::New("first argument must be a file name inside the zip")));
+
     // last arg must be function callback
     if (!args[args.Length()-1]->IsFunction())
         return ThrowException(Exception::TypeError(
-                  String::New("last argument must be a callback function")));
-  
+                                                   String::New("last argument must be a callback function")));
+
     std::string name = TOSTR(args[0]);
-  
+
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     closure_t *closure = new closure_t();
@@ -207,7 +207,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
         zip_close(za);
         return ThrowException(Exception::Error(
-            String::New(s.str().c_str())));
+                                               String::New(s.str().c_str())));
     }
 
     closure->zf = zf;
@@ -229,10 +229,10 @@ void ZipFile::Work_ReadFile(uv_work_t* req)
     struct zip_file *zf_ptr = NULL;
 
     int idx = -1;
-    
+
     std::vector<std::string>::iterator it = std::find(closure->zf->names_.begin(),
-                                            closure->zf->names_.end(), 
-                                            closure->name);
+                                                      closure->zf->names_.end(),
+                                                      closure->name);
     if (it!=closure->zf->names_.end()) {
         idx = distance(closure->zf->names_.begin(), it);
     }
@@ -253,18 +253,18 @@ void ZipFile::Work_ReadFile(uv_work_t* req)
             closure->error_name = s.str();
 
         } else {
-        
+
             struct zip_stat st;
             zip_stat_index(closure->za, idx, 0, &st);
             closure->data.clear();
             closure->data.resize( st.size );
-            
+
             int result =  0;
             result = (int)zip_fread( zf_ptr, reinterpret_cast<void*> (&closure->data[0]), closure->data.size() );
-        
+
             if (result < 0) {
                 std::stringstream s;
-                s << "error reading file #" << idx << " in " 
+                s << "error reading file #" << idx << " in "
                   << closure->name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
                 closure->error = true;
                 closure->error_name = s.str();
@@ -282,7 +282,7 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req)
     closure_t *closure = static_cast<closure_t *>(req->data);
 
     TryCatch try_catch;
-  
+
     if (closure->error) {
         Local<Value> argv[1] = { Exception::Error(String::New(closure->error_name.c_str())) };
         closure->cb->Call(Context::GetCurrent()->Global(), 1, argv);
@@ -293,9 +293,9 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req)
     }
 
     if (try_catch.HasCaught()) {
-      FatalException(try_catch);
+        FatalException(try_catch);
     }
-    
+
     closure->zf->Unref();
     uv_unref(uv_default_loop());
     closure->cb.Dispose();
