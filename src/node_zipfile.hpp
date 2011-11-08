@@ -1,25 +1,28 @@
 #ifndef __NODE_ZIPFILE_H__
 #define __NODE_ZIPFILE_H__
 
+// libzip
+extern "C"
+{
+#include <zlib.h>
+#include <errno.h>
+#include <zip.h>
+}
+
 #include <v8.h>
 #include <node.h>
 #include <node_object_wrap.h>
-#include <node_version.h>
 
 // stl
 #include <string>
 #include <vector>
 
-// libzip
-#include <zlib.h>
-#include <errno.h>
-#include <zip.h>
-//#include <zipint.h>
 
 using namespace v8;
 using namespace node;
 
 class ZipFile: public node::ObjectWrap {
+
   public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
@@ -33,8 +36,8 @@ class ZipFile: public node::ObjectWrap {
     
     // Async
     static Handle<Value> readFile(const Arguments& args);
-    static void EIO_ReadFile(uv_work_t* req);
-    static void EIO_AfterReadFile(uv_work_t* req);
+    static void Work_ReadFile(uv_work_t* req);
+    static void Work_AfterReadFile(uv_work_t* req);
     
     ZipFile(std::string const& file_name);
 

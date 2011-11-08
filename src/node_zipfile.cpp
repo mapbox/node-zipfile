@@ -1,12 +1,13 @@
 #include "node_zipfile.hpp"
 
-// stl
+#include <node_buffer.h>
+
+// std
 #include <sstream>
 #include <vector>
 #include <cstring>
 #include <algorithm>
 
-#include <node_buffer.h>
 
 
 #define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
@@ -14,9 +15,7 @@
 Persistent<FunctionTemplate> ZipFile::constructor;
 
 void ZipFile::Initialize(Handle<Object> target) {
-
     HandleScope scope;
-  
     constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(ZipFile::New));
     constructor->InstanceTemplate()->SetInternalFieldCount(1);
     constructor->SetClassName(String::NewSymbol("ZipFile"));
@@ -29,7 +28,7 @@ void ZipFile::Initialize(Handle<Object> target) {
     constructor->InstanceTemplate()->SetAccessor(String::NewSymbol("count"), get_prop);
     constructor->InstanceTemplate()->SetAccessor(String::NewSymbol("names"), get_prop);
 
-    target->Set(String::NewSymbol("ZipFile"),constructor->GetFunction());
+    target->Set(String::NewSymbol("ZipFile"), constructor->GetFunction());
 }
 
 ZipFile::ZipFile(std::string const& file_name)
@@ -57,7 +56,7 @@ Handle<Value> ZipFile::New(const Arguments& args)
     struct zip *za;
     int err;
     char errstr[1024];
-    if ((za=zip_open(input_file.c_str(), 0, &err)) == NULL) {
+    if ((za = zip_open(input_file.c_str(), 0, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << input_file << " error: " << errstr << "\n";
@@ -70,7 +69,7 @@ Handle<Value> ZipFile::New(const Arguments& args)
     int num = zip_get_num_files(za);
     zf->names_.reserve(num);
     int i = 0;
-    for (i=0; i<num; i++) {
+    for (i = 0; i < num; i++) {
         struct zip_stat st;
         zip_stat_index(za, i, 0, &st);
         zf->names_.push_back(st.name);
@@ -79,7 +78,6 @@ Handle<Value> ZipFile::New(const Arguments& args)
     zf->archive_ = za;
     zf->Wrap(args.This());
     return args.This();
-
 }
 
 Handle<Value> ZipFile::get_prop(Local<String> property,
@@ -98,10 +96,10 @@ Handle<Value> ZipFile::get_prop(Local<String> property,
           {
               a->Set(i,String::New(zf->names_[i].c_str()));
           }
-          
+
           return scope.Close(a);
     }
-    return Undefined();    
+    return Undefined();
 }
 
 Handle<Value> ZipFile::readFileSync(const Arguments& args)
@@ -146,8 +144,8 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
     data.clear();
     data.resize( st.size );
     
-    int result =  0;
-    result = (int)zip_fread( zf_ptr, reinterpret_cast<void*> (&data[0]), data.size() );
+    int result = 0;
+    result = static_cast<int>(zip_fread( zf_ptr, reinterpret_cast<void*> (&data[0]), data.size() ));
 
     if (result < 0) {
         zip_fclose(zf_ptr);
@@ -156,7 +154,7 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
         return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
-    node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
+    node::Buffer *retbuf = Buffer::New(reinterpret_cast<char *>(&data[0]),data.size());
     zip_fclose(zf_ptr);
     return scope.Close(retbuf->handle_);
 }
@@ -203,7 +201,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     struct zip *za;
     int err;
     char errstr[1024];
-    if ((za=zip_open(zf->file_name_.c_str() , 0, &err)) == NULL) {
+    if ((za = zip_open(zf->file_name_.c_str() , 0, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
@@ -217,17 +215,18 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     closure->error = false;
     closure->name = name;
     closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[args.Length()-1]));
-    uv_queue_work(uv_default_loop(), &closure->request, EIO_ReadFile, EIO_AfterReadFile);
+    uv_queue_work(uv_default_loop(), &closure->request, Work_ReadFile, Work_AfterReadFile);
+    uv_ref(uv_default_loop());
     zf->Ref();
     return Undefined();
 }
 
 
-void ZipFile::EIO_ReadFile(uv_work_t* req)
+void ZipFile::Work_ReadFile(uv_work_t* req)
 {
     closure_t *closure = static_cast<closure_t *>(req->data);
 
-    struct zip_file *zf_ptr=NULL;
+    struct zip_file *zf_ptr = NULL;
 
     int idx = -1;
     
@@ -276,12 +275,11 @@ void ZipFile::EIO_ReadFile(uv_work_t* req)
     zip_fclose(zf_ptr);
 }
 
-void ZipFile::EIO_AfterReadFile(uv_work_t* req)
+void ZipFile::Work_AfterReadFile(uv_work_t* req)
 {
     HandleScope scope;
 
     closure_t *closure = static_cast<closure_t *>(req->data);
-    ev_unref(EV_DEFAULT_UC);
 
     TryCatch try_catch;
   
@@ -289,23 +287,17 @@ void ZipFile::EIO_AfterReadFile(uv_work_t* req)
         Local<Value> argv[1] = { Exception::Error(String::New(closure->error_name.c_str())) };
         closure->cb->Call(Context::GetCurrent()->Global(), 1, argv);
     } else {
-        #if NODE_VERSION_AT_LEAST(0,3,0)
-          node::Buffer *retbuf = Buffer::New((char *)&closure->data[0],closure->data.size());
-        #else
-          node::Buffer *retbuf = Buffer::New(closure->data.size());
-          std::memcpy(retbuf->data(), (char *)&closure->data[0], closure->data.size());
-        #endif
+        node::Buffer *retbuf = Buffer::New((char *)&closure->data[0],closure->data.size());
         Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(retbuf->handle_) };
         closure->cb->Call(Context::GetCurrent()->Global(), 2, argv);
     }
 
     if (try_catch.HasCaught()) {
       FatalException(try_catch);
-      //try_catch.ReThrow();
     }
     
     closure->zf->Unref();
+    uv_unref(uv_default_loop());
     closure->cb.Dispose();
     delete closure;
 }
-

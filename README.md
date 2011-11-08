@@ -1,26 +1,27 @@
-
-# Node-Zipfile
+# node-zipfile
       
-  Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfiles in [node](http://nodejs.org).
+Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile archives in [node](http://nodejs.org).
 
 
-# Example
+## Example
 
-    > var zipfile = require('zipfile')
-    > var zf = new zipfile.ZipFile('./data/world_merc.zip')
-    > zf
+    var zipfile = require('zipfile');
+    var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
+    zf
     { names: [ 'world_merc.dbf', 'world_merc.prj', 'world_merc.shp', 'world_merc.shx' ],
       count: 4 }
-    > var buffer = zf.readFileSync('world_merc.prj')
-    > buffer.toString()
+    var buffer = zf.readFileSync('world_merc.prj');
+    buffer.toString()
     'PROJCS["Google Maps Global Mercator",GEOGCS .... '
 
 
 ## Depends
 
-  node >= 0.2.4 (development headers)
-  
-  libzip (optionally)
+node-zipfile 0.3.x depends on node v0.6 and above
+
+node-zipfile 0.1.x-0.2.x works with node v0.2-v0.4
+
+libzip (optionally, otherwise will build against bundled version)
 
 
 ## Installation
