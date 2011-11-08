@@ -18,7 +18,13 @@ test:
 fix:
 	@fixjsstyle lib/*js bin/*js test/*js
 
+fixc:
+	@tools/fix_cpp_style.sh
+
 lint:
 	@./node_modules/.bin/jshint lib/*js bin/*js test/*js
 
-.PHONY: test lint fix
+lintc:
+	@cpplint.py --verbose=3 --filter=-legal,-build/namespaces,-whitespace/line_length src/*.* include/zipfile/*.* 
+
+.PHONY: test lint fix lintc fixc

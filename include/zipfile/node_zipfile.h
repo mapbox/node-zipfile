@@ -1,9 +1,8 @@
-#ifndef __NODE_ZIPFILE_H__
-#define __NODE_ZIPFILE_H__
+#ifndef INCLUDE_ZIPFILE_NODE_ZIPFILE_H_
+#define INCLUDE_ZIPFILE_NODE_ZIPFILE_H_
 
 // libzip
-extern "C"
-{
+extern "C" {
 #include <zlib.h>
 #include <errno.h>
 #include <zip.h>
@@ -22,8 +21,7 @@ using namespace v8;
 using namespace node;
 
 class ZipFile: public node::ObjectWrap {
-
-public:
+ public:
     static Persistent<FunctionTemplate> constructor;
     static void Initialize(Handle<Object> target);
     static Handle<Value> New(const Arguments &args);
@@ -39,13 +37,13 @@ public:
     static void Work_ReadFile(uv_work_t* req);
     static void Work_AfterReadFile(uv_work_t* req);
 
-    ZipFile(std::string const& file_name);
+    explicit ZipFile(std::string const& file_name);
 
-private:
+ private:
     ~ZipFile();
     std::string const file_name_;
     struct zip *archive_;
     std::vector<std::string> names_;
 };
 
-#endif
+#endif  // INCLUDE_ZIPFILE_NODE_ZIPFILE_H_

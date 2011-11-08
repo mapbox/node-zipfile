@@ -153,7 +153,7 @@ def build_libzip():
 def build(bld):
     obj = bld.new_task_gen("cxx", "shlib", "node_addon", install_path=None)
     build_libzip()
-    obj.cxxflags = ["-DNDEBUG", "-O3", "-g", "-Wall", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
+    obj.cxxflags = ["-I../include/","-DNDEBUG", "-O3", "-g", "-Wall", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
     obj.target = TARGET
     obj.source = "src/_zipfile.cc"
     obj.source += " src/node_zipfile.cpp"
