@@ -13,7 +13,7 @@ import Utils
 
 TARGET = '_zipfile'
 TARGET_FILE = '%s.node' % TARGET
-built = 'build/default/%s' % TARGET_FILE
+built = 'build/Release/%s' % TARGET_FILE
 dest = 'lib/%s' % TARGET_FILE
 settings = 'lib/settings.js'
 BUNDLED_LIBZIP_VERSION = '0.10'

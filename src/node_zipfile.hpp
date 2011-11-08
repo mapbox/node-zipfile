@@ -4,6 +4,7 @@
 #include <v8.h>
 #include <node.h>
 #include <node_object_wrap.h>
+#include <node_version.h>
 
 // stl
 #include <string>
@@ -32,8 +33,8 @@ class ZipFile: public node::ObjectWrap {
     
     // Async
     static Handle<Value> readFile(const Arguments& args);
-    static int EIO_ReadFile(eio_req *req);
-    static int EIO_AfterReadFile(eio_req *req);
+    static void EIO_ReadFile(uv_work_t* req);
+    static void EIO_AfterReadFile(uv_work_t* req);
     
     ZipFile(std::string const& file_name);
 

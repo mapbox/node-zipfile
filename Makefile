@@ -13,4 +13,12 @@ uninstall:
 	node-waf -v uninstall
 
 test:
-	node test.js
+	@NODE_PATH=.:./lib:$NODE_PATH ./node_modules/.bin/expresso
+
+fix:
+	@fixjsstyle lib/*js bin/*js test/*js
+
+lint:
+	@./node_modules/.bin/jshint lib/*js bin/*js test/*js
+
+.PHONY: test lint fix

@@ -15,6 +15,10 @@
   "contributors"  : [],
   "licenses"      : ["BSD"],
   "dependencies"  : [],
+  "devDependencies": {
+    "expresso": "~0.9.x",
+    "jshint"  : "~0.5.x"
+   },
   "bin"           : { 
        "unzip.js" : "./bin/unzip.js" 
    },
@@ -22,7 +26,7 @@
        "examples" : "examples",
        "src": "src"
    },
-  "engines"       : { "node": ">=0.2.4 <0.5" },
+  "engines"       : { "node": ">=0.6.0 <0.7" },
   "scripts"       : {
       "install" : "node-waf configure build",
       "test"    : "make test"

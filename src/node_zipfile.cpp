@@ -5,10 +5,8 @@
 #include <vector>
 #include <cstring>
 #include <algorithm>
-//#include <iostream>
 
 #include <node_buffer.h>
-#include <node_version.h>
 
 
 #define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
@@ -34,11 +32,11 @@ void ZipFile::Initialize(Handle<Object> target) {
     target->Set(String::NewSymbol("ZipFile"),constructor->GetFunction());
 }
 
-ZipFile::ZipFile(std::string const& file_name) :
-  ObjectWrap(),
-  file_name_(file_name),
-  archive_(),
-  names_() {}
+ZipFile::ZipFile(std::string const& file_name)
+  : ObjectWrap(),
+    file_name_(file_name),
+    archive_(),
+    names_() {}
 
 ZipFile::~ZipFile() {
     zip_close(archive_);
@@ -158,18 +156,13 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args)
         return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
-    #if NODE_VERSION_AT_LEAST(0,3,0)
-        node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
-    #else
-        node::Buffer *retbuf = Buffer::New(data.size());
-        std::memcpy(retbuf->data(), (char *)&data[0], data.size());
-    #endif
-    
+    node::Buffer *retbuf = Buffer::New((char *)&data[0],data.size());
     zip_fclose(zf_ptr);
     return scope.Close(retbuf->handle_);
 }
 
 typedef struct {
+    uv_work_t request;
     ZipFile* zf;
     struct zip *za;
     std::string name;
@@ -203,6 +196,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
 
     closure_t *closure = new closure_t();
+    closure->request.data = closure;
 
     // libzip is not threadsafe so we cannot use the zf->archive_
     // instead we open a new zip archive for each thread
@@ -223,14 +217,13 @@ Handle<Value> ZipFile::readFile(const Arguments& args)
     closure->error = false;
     closure->name = name;
     closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[args.Length()-1]));
-    eio_custom(EIO_ReadFile, EIO_PRI_DEFAULT, EIO_AfterReadFile, closure);
-    ev_ref(EV_DEFAULT_UC);
+    uv_queue_work(uv_default_loop(), &closure->request, EIO_ReadFile, EIO_AfterReadFile);
     zf->Ref();
     return Undefined();
 }
 
 
-int ZipFile::EIO_ReadFile(eio_req *req)
+void ZipFile::EIO_ReadFile(uv_work_t* req)
 {
     closure_t *closure = static_cast<closure_t *>(req->data);
 
@@ -281,10 +274,9 @@ int ZipFile::EIO_ReadFile(eio_req *req)
     }
 
     zip_fclose(zf_ptr);
-    return 0;
 }
 
-int ZipFile::EIO_AfterReadFile(eio_req *req)
+void ZipFile::EIO_AfterReadFile(uv_work_t* req)
 {
     HandleScope scope;
 
@@ -315,6 +307,5 @@ int ZipFile::EIO_AfterReadFile(eio_req *req)
     closure->zf->Unref();
     closure->cb.Dispose();
     delete closure;
-    return 0;
 }
 

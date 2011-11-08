@@ -3,11 +3,7 @@
 var zip = require('zipfile');
 var fs = require('fs');
 var path = require('path');
-
-// node compatibility for mkdirs below
-var constants = (!process.EEXIST >= 1) ?
-    require('constants') :
-    { EEXIST: process.EEXIST };
+var constants = require('constants');
 
 var usage = 'usage: unzip.js <zipfile>';
 
@@ -22,7 +18,7 @@ var zf = new zip.ZipFile(file);
 zf.names.forEach(function(name) {
     var uncompressed = path.join('.', name);
     var dirname = path.dirname(uncompressed);
-    fs.mkdir(dirname, 0755 , function(err) {
+    fs.mkdir(dirname, '0755' , function(err) {
         if (err && err.errno != constants.EEXIST) throw err;
         if (path.extname(name)) {
             var buffer = zf.readFileSync(name);

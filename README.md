@@ -25,61 +25,61 @@
 
 ## Installation
 
-  You can install the latest tag via npm:
-  
-    $ npm install zipfile
-  
-  Or install from github master:
-  
-    $ git clone git://github.com/springmeyer/node-zipfile.git
-    $ cd node-zipfile
-    $ ./configure
-    $ make
-    $ make install
+You can install the latest tag via npm:
+
+    npm install zipfile
+
+Or install from github master:
+
+    git clone git://github.com/springmeyer/node-zipfile.git
+    cd node-zipfile
+    ./configure
+    make
+    make install
 
 
 ## Dynamically linking against libzip
 
-  node-zipfile depends on libzip, but by default
-  bundles a copy in deps/ which is statically linked.
-  
-  If you want to use an external libzip first install it:
-  
-  Debian:
-  
-    $ sudo apt-get install libzip-dev libzip1
-  
-  OS X:
-    
-    $ brew install libzip
-  
-  Or from source:
+node-zipfile depends on libzip, but by default
+bundles a copy in deps/ which is statically linked.
 
-    $ wget http://nih.at/libzip/libzip-0.10.tar.bz2
-    $ tar xvf libzip-0.10.tar.bz2
-    $ cd libzip-0.10
-    $ ./configure
-    $ make
-    $ sudo make install
-  
-  Then on linux do:
-  
-    $ sudo ldconfig
+If you want to use an external libzip first install it:
 
-  Now, configure node-zipfile with the --shared-libzip option:
-   
-    $ ./configure --shared-libzip
+Debian:
+
+    sudo apt-get install libzip-dev libzip1
+
+OS X:
   
-  If you installed libzip in a custom location then configure like:
-    
-    $ ./configure --shared-libzip --libzip=/opt/local
+    brew install libzip
 
-  Otherwise /usr/ and /usr/local will be searched for libzip:
+Or from source:
 
-    $ ./configure --shared-libzip
-    $ make
-    $ sudo make install
-    $ ./test.js
+    wget http://nih.at/libzip/libzip-0.10.tar.bz2
+    tar xvf libzip-0.10.tar.bz2
+    cd libzip-0.10
+    ./configure
+    make
+    sudo make install
+
+Then on linux do:
+
+    sudo ldconfig
+
+Now, configure node-zipfile with the --shared-libzip option:
+ 
+    ./configure --shared-libzip
+
+If you installed libzip in a custom location then configure like:
+  
+    ./configure --shared-libzip --libzip=/opt/local
+
+Otherwise /usr/ and /usr/local will be searched for libzip:
+
+    ./configure --shared-libzip
+    make
+    sudo make install
+    ./test.js
 
 
 ## License
