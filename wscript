@@ -167,7 +167,8 @@ def build(bld):
 
 def clean_libzip():
     if not Options.options.shared_libzip:
-      rmtree('deps/%s' % BUNDLED_LIBZIP)
+      if os.path.exists('deps/%s' % BUNDLED_LIBZIP):
+          rmtree('deps/%s' % BUNDLED_LIBZIP)
 
 def clean(bld):
     pass # to avoid "Nothing to clean (project not configured)" error
