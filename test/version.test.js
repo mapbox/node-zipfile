@@ -1,7 +1,11 @@
 var zipfile = require('zipfile');
+var assert = require('assert');
 var info = require('package.json');
 
-exports['test version updated for release'] = function(beforeExit, assert) {
-    assert.equal(info.version, zipfile.version);
-};
+describe('Version', function(){
+
+    it('version updated for release', function(){
+        assert.equal(info.version, zipfile.version);
+    });
+});
 

@@ -13,7 +13,7 @@ uninstall:
 	node-waf -v uninstall
 
 test:
-	@NODE_PATH=.:./lib:$NODE_PATH ./node_modules/.bin/expresso
+	@NODE_PATH=.:./lib:$NODE_PATH mocha -r zipfile -r assert
 
 fix:
 	@fixjsstyle lib/*js bin/*js test/*js

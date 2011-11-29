@@ -16,7 +16,7 @@
   "licenses"      : ["BSD"],
   "dependencies"  : [],
   "devDependencies": {
-    "expresso": "~0.9.x",
+    "mocha": "*",
     "jshint"  : "~0.5.x"
    },
   "bin"           : { 
