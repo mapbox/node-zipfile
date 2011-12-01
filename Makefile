@@ -1,5 +1,15 @@
 all: zipfile.node
 
+NPROCS:=1
+OS:=$(shell uname -s)
+
+ifeq ($(OS),Linux)
+	NPROCS:=$(shell grep -c ^processor /proc/cpuinfo)
+endif
+ifeq ($(OS),Darwin)
+	NPROCS:=$(shell sysctl -n hw.ncpu)
+endif
+
 install:
 	node-waf -v build install
 
@@ -27,4 +37,11 @@ lint:
 lintc:
 	@cpplint.py --verbose=3 --filter=-legal,-build/namespaces,-whitespace/line_length src/*.* include/zipfile/*.* 
 
-.PHONY: test lint fix lintc fixc
+gyp:
+	rm -rf ./projects/makefiles/
+	python gyp/gyp build.gyp --depth=. -f make --generator-output=./projects/makefiles
+	#./build.py
+	make -j$(NPROCS) -C ./projects/makefiles/ V=1
+	cp projects/makefiles/out/Default/_zipfile.node lib/_zipfile.node
+
+.PHONY: test lint fix lintc fixc gyp
