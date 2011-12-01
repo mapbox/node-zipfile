@@ -82,6 +82,31 @@ Otherwise /usr/ and /usr/local will be searched for libzip:
     sudo make install
     ./test.js
 
+## Building libzip with cmake on windows:
+
+Note: needs cygwin so the .sh shell scripts work that libzip cmake files call.
+
+    git clone git://github.com/springmeyer/node-zipfile.git
+    cd node-zipfile/deps/
+    bsdtar xvf libzip-0.10.tar.bz2
+    cd libzip
+    mkdir build_vc100
+    cd build_vc100
+    cmake -DZLIB_LIBRARY=c:\dev2\zlib\zlib.lib -DZLIB_INCLUDE_DIR=c:\dev2\zlib -G"NMake Makefiles" -DCMAKE_BUILD_TYPE=Release ..\
+
+Then edit lib\zipconf.h removing 'inttypes.h' with:
+
+    #include <stdint.h>
+    #include <limits.h>
+
+Finally build libzip
+
+    nmake /f Makefile zip
+    
+Then compile node-zipfile:
+
+    TODO
+ 
 
 ## License
 
