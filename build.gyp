@@ -44,8 +44,8 @@
         [ 'OS=="win"', {
           'defines': [
             'PLATFORM="win32"',
-            '_LARGEFILE_SOURCE',
-            '_FILE_OFFSET_BITS=64',
+            #'_LARGEFILE_SOURCE',
+            #'_FILE_OFFSET_BITS=64',
             '_WINDOWS',
             '__WINDOWS__', # ltdl
             'BUILDING_NODE_EXTENSION'
@@ -53,10 +53,13 @@
           'libraries': [ 
               'node.lib',
               'zip.lib',
+			  'zlib.lib'
           ],
           'include_dirs': [
-             'c:\\mapnik-2.0\\include',
-             'c:\\dev2\\node-v0.6.2\\deps\\v8\\include',
+             'include',
+			 'c:\\dev2\\node-zipfile\\deps\\libzip-0.10\\lib',
+             'c:\\dev2\\zlib',
+			 'c:\\dev2\\node-v0.6.2\\deps\\v8\\include',
              'c:\\dev2\\node-v0.6.2\\src',
              'c:\\dev2\\node-v0.6.2\\deps\\uv\\include',
           ],
@@ -67,6 +70,8 @@
                 '/FORCE:MULTIPLE'
               ],
               'AdditionalLibraryDirectories': [
+			    'c:\\dev2\\zlib',
+				'c:\\dev2\\node-zipfile\\deps\\libzip-0.10\\build_vc100\\lib',
                 'c:\\dev2\\node-v0.6.2\\Release\\lib',
                 'c:\\dev2\\node-v0.6.2\\Release',
               ],
