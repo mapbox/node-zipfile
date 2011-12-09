@@ -6,6 +6,8 @@
           "src/node_zipfile.cpp",
       ],
       'node_root': '/opt/node-v6.1',
+      'node_root_win': 'c:\\node',
+      'deps_root_win': 'c:\\dev2'
   },
   'targets': [
     {
@@ -22,9 +24,6 @@
         '_LARGEFILE_SOURCE',
         '_FILE_OFFSET_BITS=64',
       ],
-      #'dependencies': [
-      #  'deps/libzip.gyp:libzip'
-      #],
       'conditions': [
         [ 'OS=="mac"', {
           'libraries': [
@@ -44,8 +43,6 @@
         [ 'OS=="win"', {
           'defines': [
             'PLATFORM="win32"',
-            #'_LARGEFILE_SOURCE',
-            #'_FILE_OFFSET_BITS=64',
             '_WINDOWS',
             '__WINDOWS__', # ltdl
             'BUILDING_NODE_EXTENSION'
@@ -57,11 +54,11 @@
           ],
           'include_dirs': [
              'include',
-			 'c:\\dev2\\node-zipfile\\deps\\libzip-0.10\\lib',
-             'c:\\dev2\\zlib',
-			 'c:\\dev2\\node-v0.6.2\\deps\\v8\\include',
-             'c:\\dev2\\node-v0.6.2\\src',
-             'c:\\dev2\\node-v0.6.2\\deps\\uv\\include',
+             '<@(deps_root_win)\\node-zipfile\\deps\\libzip-0.10\\lib',
+             '<@(deps_root_win)\\zlib',
+             '<@(deps_root_win)\\node-v0.6.2\\deps\\v8\\include',
+             '<@(deps_root_win)\\node-v0.6.2\\src',
+             '<@(deps_root_win)\\node-v0.6.2\\deps\\uv\\include',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
@@ -70,10 +67,10 @@
                 '/FORCE:MULTIPLE'
               ],
               'AdditionalLibraryDirectories': [
-			    'c:\\dev2\\zlib',
-				'c:\\dev2\\node-zipfile\\deps\\libzip-0.10\\build_vc100\\lib',
-                'c:\\dev2\\node-v0.6.2\\Release\\lib',
-                'c:\\dev2\\node-v0.6.2\\Release',
+                '<@(deps_root_win)\\zlib',
+                '<@(deps_root_win)\\node-zipfile\\deps\\libzip-0.10\\build_vc100\\lib',
+                '<@(node_root_win)\\Release\\lib',
+                '<@(node_root_win)\\Release',
               ],
             },
           },
