@@ -9,5 +9,6 @@ set NODE_PATH=lib
 rem have to put zip.lib on PATH
 set PATH=%PATH%;c:\\dev2\node-zipfile\\lib
 copy deps\\libzip-0.10\\build_vc100\\lib\\zip.dll lib\\zip.dll
-node node_modules\expresso\bin\expresso
+rem node node_modules\expresso\bin\expresso
+mocha
 rem node -e "console.log(require('zipfile'))"

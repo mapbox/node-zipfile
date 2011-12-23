@@ -56,9 +56,9 @@
              'include',
              '<@(deps_root_win)\\node-zipfile\\deps\\libzip-0.10\\lib',
              '<@(deps_root_win)\\zlib',
-             '<@(deps_root_win)\\node-v0.6.2\\deps\\v8\\include',
-             '<@(deps_root_win)\\node-v0.6.2\\src',
-             '<@(deps_root_win)\\node-v0.6.2\\deps\\uv\\include',
+             '<@(node_root_win)\\deps\\v8\\include',
+             '<@(node_root_win)\\src',
+             '<@(node_root_win)\\deps\\uv\\include',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
