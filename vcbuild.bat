@@ -1,6 +1,6 @@
-set target=Build
-set config=Release
-rm build.sln
+del build.sln
+rd /q /s Default
+del lib\\_zipfile.node
 python gyp/gyp build.gyp --depth=. -f msvs -G msvs_version=2010
 msbuild build.sln
 copy Default\\_zipfile.node lib\\_zipfile.node
