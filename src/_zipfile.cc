@@ -16,7 +16,7 @@ extern "C" {
         ZipFile::Initialize(target);
 
         // node-zipfile version
-        target->Set(String::NewSymbol("version"), String::New("0.3.0"));
+        target->Set(String::NewSymbol("version"), String::New("0.3.1"));
 
         // versions of deps
         Local<Object> versions = Object::New();
