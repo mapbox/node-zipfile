@@ -40,9 +40,7 @@ class ZipFile: public node::ObjectWrap {
     explicit ZipFile(std::string const& file_name);
 
  private:
-    ~ZipFile();
-    std::string const file_name_;
-    struct zip *archive_;
+    std::string file_name_;
     std::vector<std::string> names_;
 };
 
