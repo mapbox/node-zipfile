@@ -14,7 +14,7 @@
   "author"        : "Dane Springmeyer <dane@dbsgeo.com>",
   "contributors"  : [],
   "licenses"      : ["BSD"],
-  "dependencies"  : [],
+  "dependencies"  : {},
   "devDependencies": {
     "mocha": "*",
     "jshint"  : "~0.5.x"
