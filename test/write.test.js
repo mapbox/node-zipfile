@@ -8,11 +8,9 @@ var constants = require('constants');
 describe('Async Writes', function(){
 
     var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
-    var wrote = 0;
-
-    it('async write', function(done){
-        zf.names.forEach(function(name) {
-            var dest = path.join('/tmp/async', name);
+    zf.names.forEach(function(name) {
+        it('async write '+ name, function(done){
+            var dest = path.join(__dirname,'/tmp/', name);
             support.mkdirP(path.dirname(dest), 0755 , function(err) {
                 if (err) throw err;
                 if (path.extname(name)) {
@@ -25,9 +23,8 @@ describe('Async Writes', function(){
                                  // written is number of bytes written
                                  assert.ok(written > 0);
                                  fs.close(fd, function(err) {
-                                     wrote++;
-                                     if (wrote >= 4) done();
                                      if (err) throw err;
+                                     done();
                                  });
                             });
                         });
@@ -35,10 +32,6 @@ describe('Async Writes', function(){
                 }
             });
         });
-    });
-
-    after(function(){
-      assert.equal(wrote, 4);
     });
 
 });

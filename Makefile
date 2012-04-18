@@ -23,7 +23,7 @@ uninstall:
 	node-waf -v uninstall
 
 test:
-	@NODE_PATH=.:./lib:$NODE_PATH mocha -r zipfile -r assert
+	@PATH=./node_modules/mocha/bin:${PATH} && NODE_PATH=./lib:$NODE_PATH mocha -R spec
 
 fix:
 	@fixjsstyle lib/*js bin/*js test/*js
