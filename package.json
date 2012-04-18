@@ -17,7 +17,7 @@
   "dependencies"  : {},
   "devDependencies": {
     "mocha": "*",
-    "mkdirp": "~0.3.0"
+    "mkdirp": "~0.3.0",
     "jshint"  : "~0.5.x"
    },
   "bin"           : { 
