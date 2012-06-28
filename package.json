@@ -1,6 +1,6 @@
 {
   "name"          : "zipfile",
-  "version"       : "0.3.1",
+  "version"       : "0.3.2",
   "main"          : "./lib/index.js",
   "description"   : "C++ library for handling zipfiles in node",
   "keywords"      : ["zipfile", "uncompress", "unzip", "zlib"],
@@ -27,7 +27,7 @@
        "examples" : "examples",
        "src": "src"
    },
-  "engines"       : { "node": ">=0.6.0 <0.7" },
+  "engines"       : { "node": ">= 0.6.13 && < 0.9.0" },
   "scripts"       : {
       "install" : "node-waf configure build",
       "test"    : "make test"
