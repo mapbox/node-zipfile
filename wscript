@@ -143,16 +143,17 @@ def configure(conf):
     
     #ldflags = []
     #conf.env.append_value("LDFLAGS", ldflags)
+    conf.env.SHARED_LIBZIP = o.shared_libzip
 
-def build_libzip():
-    if not Options.options.shared_libzip:
+def build_libzip(bld):
+    if not bld.env.SHARED_LIBZIP:
         os.chdir('deps/%s' % BUNDLED_LIBZIP)
         os.system('make')
         os.chdir('../../')
 
 def build(bld):
     obj = bld.new_task_gen("cxx", "shlib", "node_addon", install_path=None)
-    build_libzip()
+    build_libzip(bld)
     obj.cxxflags = ["-I../include/","-DNDEBUG", "-O3", "-g", "-Wall", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
     obj.target = TARGET
     obj.source = "src/_zipfile.cc"
@@ -165,18 +166,18 @@ def build(bld):
     bin_dir = bld.path.find_dir('./bin')
     bld.install_files('${PREFIX_NODE}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
 
-def clean_libzip():
-    if not Options.options.shared_libzip:
+def clean_libzip(ctx):
+    if not ctx.env.SHARED_LIBZIP:
       if os.path.exists('deps/%s' % BUNDLED_LIBZIP):
           rmtree('deps/%s' % BUNDLED_LIBZIP)
 
 def clean(bld):
     pass # to avoid "Nothing to clean (project not configured)" error
 
-def shutdown():
+def shutdown(ctx):
     if Options.commands['clean']:
         if exists(TARGET): unlink(TARGET)
-        clean_libzip()
+        clean_libzip(ctx)
     if Options.commands['clean']:
         if exists(dest):
             unlink(dest)
