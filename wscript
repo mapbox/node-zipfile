@@ -167,9 +167,8 @@ def build(bld):
     bld.install_files('${PREFIX_NODE}/bin', bin_dir.ant_glob('*'), cwd=bin_dir, relative_trick=True, chmod=0755)
 
 def clean_libzip(ctx):
-    if not ctx.env.SHARED_LIBZIP:
-      if os.path.exists('deps/%s' % BUNDLED_LIBZIP):
-          rmtree('deps/%s' % BUNDLED_LIBZIP)
+    if os.path.exists('deps/%s' % BUNDLED_LIBZIP):
+        rmtree('deps/%s' % BUNDLED_LIBZIP)
 
 def clean(bld):
     pass # to avoid "Nothing to clean (project not configured)" error

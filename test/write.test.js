@@ -4,6 +4,7 @@ var path = require('path');
 var fs = require('fs');
 var constants = require('constants');
 var mkdirp = require('mkdirp');
+var existsSync = require('fs').existsSync || require('path').existsSync;
 
 describe('Async Writes', function(){
 
@@ -49,7 +50,7 @@ describe('Sync Writes', function(){
                     var fd = fs.openSync(uncompressed, 'w');
                     fs.writeSync(fd, buffer, 0, buffer.length, null);
                     fs.closeSync(fd);
-                    assert.ok(path.existsSync(uncompressed));
+                    assert.ok(existsSync(uncompressed));
                     done();
                 }
             });
