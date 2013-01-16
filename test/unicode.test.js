@@ -19,9 +19,9 @@ describe('Handling unicode paths, filenames, and data', function(){
         });
     });
 
-    it('open zip with ansi paths and but unicode filenames in archive', function(){
+    it('open zip with ansi path but unicode filename in archive', function(){
         // created with OS X 10.7 with right-click, then "compress"
-        var zf = new zipfile.ZipFile('./test/data/你好_points.csv.zip');
+        var zf = new zipfile.ZipFile('./test/data/points.csv.zip');
         assert.equal(zf.count, 3);
         assert.deepEqual(zf.names, ["你好_points.csv","__MACOSX/","__MACOSX/._你好_points.csv"]);
         var buffer = zf.readFileSync(zf.names[0]);
