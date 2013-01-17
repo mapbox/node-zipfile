@@ -11,18 +11,18 @@ describe('Handling unicode paths, filenames, and data', function(){
         var zf = new zipfile.ZipFile(zippath);
         assert.equal(zf.count, 3);
         var buffer = zf.readFileSync(zf.names[0]);
-        assert.equal(buffer.toString('utf8'),fs.readFileSync(zippath.replace('.zip','')).toString('utf8'));
+        assert.equal(buffer.toString('utf8'),fs.readFileSync(zippath.replace('.zip','')).toString('utf8').replace(/\r/g,''));
     });
 
     it('open zip with folder and file with unicode', function(){
-        var zippath = './test/data/Clément/Olá.txt.zip';
+        var zippath = './test/data/Clément/Olá.zip';
         assert.ok(existsSync(zippath));
         var zf = new zipfile.ZipFile(zippath);
         assert.equal(zf.count, 1);
     });
 
     it('open zip with unicode paths and unicode filenames in archive', function(){
-        var zippath = './test/data/Clément/Olá.txt.zip';
+        var zippath = './test/data/Clément/Olá.zip';
         assert.ok(existsSync(zippath));
         var zf = new zipfile.ZipFile(zippath);
         assert.equal(zf.count, 1);
@@ -41,7 +41,7 @@ describe('Handling unicode paths, filenames, and data', function(){
         assert.equal(zf.count, 3);
         assert.deepEqual(zf.names, ["你好_points.csv","__MACOSX/","__MACOSX/._你好_points.csv"]);
         var buffer = zf.readFileSync(zf.names[0]);
-        assert.equal(buffer.toString('utf8'),fs.readFileSync('./test/data/你好_points.csv').toString('utf8'));
+        assert.equal(buffer.toString('utf8'),fs.readFileSync('./test/data/你好_points.csv').toString('utf8').replace(/\r/g,''));
     });
 
 });
