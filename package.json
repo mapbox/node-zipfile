@@ -1,6 +1,6 @@
 {
   "name"          : "zipfile",
-  "version"       : "0.3.3",
+  "version"       : "0.3.4",
   "main"          : "./lib/index.js",
   "description"   : "C++ library for handling zipfiles in node",
   "keywords"      : ["zipfile", "uncompress", "unzip", "zlib"],
