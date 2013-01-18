@@ -3,7 +3,7 @@
 #include <node_buffer.h>
 
 #ifdef _WINDOWS
-#include <Windows.h>	
+#include <Windows.h>
 #endif
 
 // std
@@ -18,47 +18,72 @@
 #ifdef _WINDOWS
 std::string wstring2string(const std::wstring& s)
 {
-    int slength = (int)s.length() + 1;
-    int len = ::WideCharToMultiByte(CP_UTF8, 0, s.c_str(), slength, 0, 0, 0, 0);
-    char * buf_ptr = new char [len+1];
-    ::WideCharToMultiByte(CP_UTF8, 0, s.c_str(), slength, buf_ptr, len, 0, 0);
+    DWORD size = WideCharToMultiByte(CP_UTF8,
+	                                 0,
+	                                 s.c_str(),
+	                                 -1,
+	                                 NULL,
+	                                 0,
+	                                 NULL,
+	                                 NULL);
+    if (size == 0) {
+      // This should never happen.
+      fprintf(stderr, "Could not convert arguments to utf8.");
+      exit(1);
+    }
+    char * buf_ptr = new char [size];
+    DWORD result = WideCharToMultiByte(CP_ACP,
+                                       0,
+	                                   s.c_str(),
+                                       -1,
+                                       buf_ptr,
+                                       size,
+                                       NULL,
+                                       NULL);
+    if (result == 0) {
+      // This should never happen.
+      fprintf(stderr, "Could not convert arguments to utf8.");
+      exit(1);
+    }
     std::string r(buf_ptr);
 	delete buf_ptr;
     return r;
 }
 
-std::wstring utf8ToWide( const char * src )
+std::wstring utf8ToWide( std::string const& s )
 {
-    int len = ::MultiByteToWideChar(CP_UTF8, 0, src, -1, 0, 0);
-    wchar_t * buf_ptr = new wchar_t [len+1];
-    ::MultiByteToWideChar(CP_UTF8, 0, src, -1, buf_ptr, len);
-    std::wstring rt(buf_ptr);
-	delete buf_ptr;
+    int ws_len, r;
+	WCHAR* ws;
+    ws_len = MultiByteToWideChar(CP_UTF8,
+                               0,
+                               s.c_str(),
+                               -1,
+                               NULL,
+                               0);
+    ws = new wchar_t [ws_len * sizeof(WCHAR)];
+	if (ws == NULL) {
+      // This should never happen.
+      fprintf(stderr, "Could not convert arguments from utf8.");
+      exit(1);
+	}
+    r = MultiByteToWideChar(CP_UTF8,
+                          0,
+                          s.c_str(),
+                          -1,
+                          ws,
+                          ws_len);
+	if (r != ws_len) {
+      // This should never happen.
+      fprintf(stderr, "Could not do anything useful.");
+      exit(1);
+	}
+    std::wstring rt(ws);
+	delete ws;
     return rt;
 }
 
-std::wstring    MultiByteToWideString(const char* szSrc)  
-{
- unsigned int iSizeOfStr = MultiByteToWideChar(CP_UTF8, 0, szSrc, -1, NULL, 0);  
- wchar_t* wszTgt = new wchar_t[iSizeOfStr];  
- if(!wszTgt)    assert(0);  
-  MultiByteToWideChar(CP_UTF8, 0, szSrc, -1, wszTgt, iSizeOfStr);  
- std::wstring wstr(wszTgt);  
-delete(wszTgt);  
-return(wstr);  
-}
-
-std::string WideStringToMultiByte(const wchar_t* wszSrc)  
-{  
-    int iSizeOfStr = WideCharToMultiByte(CP_UTF8, 0, wszSrc, -1, NULL, 0, NULL, NULL);  
-    char* szTgt = new char[iSizeOfStr];  
-    if(!szTgt)  return(NULL);  
-    WideCharToMultiByte(CP_UTF8, 0, wszSrc, -1, szTgt, iSizeOfStr, NULL, NULL);  
-    std::string str(szTgt);  
-    delete(szTgt);  
-    return(str);  
-} 
 #endif
+
 Persistent<FunctionTemplate> ZipFile::constructor;
 
 void ZipFile::Initialize(Handle<Object> target) {
@@ -93,31 +118,21 @@ Handle<Value> ZipFile::New(const Arguments& args) {
         return ThrowException(Exception::TypeError(
                                   String::New("first argument must be a path to a zipfile")));
 
-    //std::string input_file = TOSTR(args[0]);
-	String::Utf8Value input_file(args[0]->ToString());
-	std::clog << "utf: " << *input_file << "\n";
-	String::Value two_byte(args[0]->ToString());
-	std::clog << "two: " << (const char *)*two_byte << "\n";
-	//std::clog << "wide: " << utf8ToWide(*input_file) << "\n";
-	std::clog << "back: " << wstring2string(utf8ToWide(*input_file)) << "\n";
-	std::string new_input = wstring2string(utf8ToWide(*input_file));
-	const char * try_to_open = new_input.c_str();
-	//std::clog << "aft: " << *input_file << "\n";
-	//std::wstring wstrUTF16 = MultiByteToWideString(*input_file);
-    //const char * try_to_open = (const char *)wstrUTF16.c_str();//WideStringToMultiByte(wstrUTF16.c_str()).c_str();
+    std::string input_file = TOSTR(args[0]);
+	input_file = wstring2string(utf8ToWide(input_file));
 	int err;
     char errstr[1024];
     struct zip *za;
-    if ((za=zip_open(try_to_open, 0, &err)) == NULL) {
+    if ((za=zip_open(input_file.c_str(), 0, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
-        s << "cannot open file: " << try_to_open << " error: " << errstr << "\n";
+        s << "cannot open file: " << input_file << " error: " << errstr << "\n";
         zip_close(za);
         return ThrowException(Exception::Error(
                                   String::New(s.str().c_str())));
     }
 
-    ZipFile* zf = new ZipFile(try_to_open);
+    ZipFile* zf = new ZipFile(input_file);
 
     int num = zip_get_num_files(za);
     zf->names_.reserve(num);
@@ -126,7 +141,6 @@ Handle<Value> ZipFile::New(const Arguments& args) {
         struct zip_stat st;
         zip_stat_index(za, i, 0, &st);
 		std::string name = st.name;
-		//name = wstring2string(utf8ToWide(name));
         zf->names_.push_back(name);
     }
     zip_close(za);
