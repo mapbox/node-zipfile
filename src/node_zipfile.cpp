@@ -29,7 +29,6 @@ std::string wstring2string(const std::wstring& s)
     if (size == 0) {
       // This should never happen.
       fprintf(stderr, "Could not convert arguments to utf8.");
-      exit(1);
     }
     char * buf_ptr = new char [size];
     DWORD result = WideCharToMultiByte(CP_ACP,
@@ -43,7 +42,6 @@ std::string wstring2string(const std::wstring& s)
     if (result == 0) {
       // This should never happen.
       fprintf(stderr, "Could not convert arguments to utf8.");
-      exit(1);
     }
     std::string r(buf_ptr);
 	delete buf_ptr;
@@ -119,7 +117,9 @@ Handle<Value> ZipFile::New(const Arguments& args) {
                                   String::New("first argument must be a path to a zipfile")));
 
     std::string input_file = TOSTR(args[0]);
+#ifdef _WINDOWS
 	input_file = wstring2string(utf8ToWide(input_file));
+#endif
 	int err;
     char errstr[1024];
     struct zip *za;
