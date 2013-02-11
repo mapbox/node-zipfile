@@ -293,7 +293,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args) {
     closure->error = false;
     closure->name = name;
     closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[args.Length()-1]));
-    uv_queue_work(uv_default_loop(), &closure->request, Work_ReadFile, Work_AfterReadFile);
+    uv_queue_work(uv_default_loop(), &closure->request, Work_ReadFile, (uv_after_work_cb)Work_AfterReadFile);
     zf->Ref();
     return Undefined();
 }
