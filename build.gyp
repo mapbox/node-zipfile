@@ -6,7 +6,7 @@
           "src/node_zipfile.cpp",
       ],
       'node_root': '/opt/node-v6.1',
-      'node_root_win': 'c:\\node',
+      'node_root_win': 'C:\\Users\\mapnik\\.node-gyp\\0.10.3\\',
       'deps_root_win': 'c:\\dev2'
   },
   'targets': [
