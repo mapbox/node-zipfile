@@ -135,7 +135,7 @@
 		'deps/zlib/contrib/minizip/',
 	  ],
 	  'libraries': [ 
-		  '<(PRODUCT_DIR)/lib/zlib.lib',
+		  '<(PRODUCT_DIR)/zlib.lib',
        ],
 	  'msvs_settings': {
             'VCLinkerTool': {
