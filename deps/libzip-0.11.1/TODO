@@ -1,0 +1,172 @@
+API Plans
+=========
+
+Encryption
+----------
+* struct zip *zip_open_encrypted(const char *path, int flags, const char *password, int *errorp);
+* int zip_set_encryption(struct zip *archive, zip_uint64_t idx, zip_uint16_t method, const char *password);
+* void zip_set_archive_encryption(struct zip *archive, zip_uint16_t method, const char *password);
+
+API Issues
+==========
+! D zip_get_archive_comment has int *lenp argument.  Cleaner would be zip_uint32_t *.
+	rename and fix.  which other functions for naming consistency?
+! D rename remaining zip_XXX_{file,archive}_* to zip_{file,archive}_XXX_*?
+* compression/crypt implementations: how to set error code on failure
+* compression/crypt error messages a la ZIP_ER_ZLIB (no detailed info passing)
+* check arguments for every entry point into libzip
+
+
+Features
+========
+* function to copy file from one archive to another
+* do not compress if storing is smaller
+
+! W test extra fields api
+  . set
+  . delete
+  . delete_by_id
+* I/O methods
+* support streaming output (creating new archive to e.g. stdout)
+* add functions to:
+  . set last modification time for entry
+  . read/set ASCII file flag? (wiz: more general options?)
+  . get/set "version made by" and "external file attributes"
+    (can be used to decide if an entry is a directory, if the
+     archive was created on DOS)
+* zip_commit (to finish changes without closing archive)
+* add custom compression function support
+* zip_source_zip: allow rewinding
+* zip_source_seek, zip_fseek
+* zipcmp: add option for file content comparison
+* zipcmp: compare bit flags if paranoid
+* consistency
+  . for stored files, test compressed = uncompressed
+  . data descriptor
+  . local headers come before central dir
+
+- support for old compression methods?????
+- append to files (for self-extracting files)
+
+
+Bugs
+====
+! D fix OpenSUSE i686 regression failures
+* fix open_filename_duplicate_consistency.test to fail
+* split zip archive torrentzip state from user requested torrentzip state
+* check for limits imposed by format (central dir size, file size, extra fields, ...)
+* _zip_u2d_time: handle localtime(3) failure
+* missing -Wl,-R in pkg-config file
+* POSIX: zip_open: check whether file can be created and fail if not
+* POSIX: fix permissions of new file to match old one
+* fix inconsistent usage of valid flags (not checked in many places)
+* cdr == NULL -> ER_NOENT vs. idx > cdir->nentry -> ER_INVAL inconsistent (still there?)
+* torrentzip broken on NetBSD/amd64 6.99
+* torrentzip: check behaviour of files with empty name (size 0; file size > 0)
+
+
+Cleanup
+=======
+* get rid of zip_get_{compression,encryption}_implementation
+* use zip_*int*_t internally
+* clean up lint(1) warnings?
+
+
+Test Case Issues
+================
+* test calls against old API
+* run regression tests also from CMake framework
+* rename file to dir/ and vice versa (fails)
+* fix comment test to be newline insensitive
+* zip64 test case ideas (but how to provide comparison and input files?)
+  Create files with:
+  * compressed < 4GB, uncompressed > 4GB
+  * compressed > 4GB
+  * offset of file or central directory > 4GB
+
+* (add, replace)
+	add to empty zip
+	add to existing zip
+	add w/ existing file name [E]
+	replace ok
+	replace w/ illegal index [E]
+	replace w/ deleted name [E]
+	unchange added/replaced file
+* (close)
+	copy zip file
+	open copy
+	rename, delete, replace, add w/ new name, add w/ deleted name
+	close
+	zipcmp copy expected
+	remove copy
+* (error_get)
+* (error_get_sys_type)
+* (error_to_str)
+* (extra_fields)
+* (file_error_get)
+* (file_strerror)
+* (replace)
+* (source_buffer)
+* (source_file)
+* (source_filep)
+* (source_free)
+* (source_function)
+* (source_zip)
+* (strerror)
+* (unchange)
+* (unchange_all)
+
+
+I/O Methods
+===========
+One major headache for libzip portability (especially to Windows) is
+I/O, i.e. reading and writing from the file system.  Also, there
+have been requests to open zip archives from a memory buffer.  To
+address these issues, we'll introduce an I/O abstraction layer.
+
+  We'll reuse zip_source, since it already provides support for
+the reading part, adding high level abstraction of the additional
+operations needed. This way, newly written zip_sources can be used
+both for adding files into an archive as well as for accessing archives
+themselves.
+
+Specifically, we'll add these commands:
+
+ZIP_SOURCE_BEGIN_WRITE
+        Prepare for writing.  The written data will replace all
+        original data.  The file position is reset to 0.  (On POSIX
+        systems, this will create a temporary file and open it for
+        writing.)
+
+ZIP_SOURCE_WRITE
+        Write bytes of data, a la fwrite(3) (does not need to know
+        anything about the zip archive structure).
+
+ZIP_SOURCE_COMMIT_WRITE
+        Used after all data has been written successfully. (On
+        POSIX systems, this will replace the original file with
+        the temporary file, adapting permissions etc.)
+ZIP_SOURCE_ROLLBACK_WRITE
+        because writing failed) to restore original data if possible;
+        return an errohis will
+        delete the temporary file.)
+
+ZIP_SOURCE_SEEK
+        Set postion for next read or write, a la fseek(3).
+
+ZIP_SOURCE_SUPPORTS
+        Query which commands are supported for this stream.  If a
+        file cannot be written to, this will report ZIP_SOURCE_BEGIN_WRITE
+        as not supported, even if the source type would support
+        write.  (This is used in zip_open to set global flags like
+        ZIP_AFL_RDONLY.)
+
+  We'll provide a zip_open variant that takes a zip_source argument
+used for reading/writing archives.  Using an enhanced version of
+zip_source_buffer, this can be used to read zip archives from memory.
+
+  zip_open itself will create a source from the file using a
+port-specific default implementation (POSIX vs. Windows vs. ...).
+
+  Once the details are finalized, we'll ask for volunteers for writing
+a Windows specific implementation.

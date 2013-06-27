@@ -1,0 +1,5 @@
+# change local and global comments in a zip archive
+program set_comment_all
+return 0
+args testcomment.zip
+file testcomment.zip testcomment.zip testchanged.zip

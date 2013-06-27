@@ -1,0 +1,207 @@
+AUTOMAKE_OPTIONS=	parallel-tests
+
+noinst_PROGRAMS= \
+	add_from_buffer \
+	add_from_filep \
+	fopen_unchanged \
+	fread \
+	modify \
+	name_locate \
+	set_comment_all \
+	set_comment_localonly \
+	set_comment_removeglobal \
+	set_comment_revert \
+	set_compression \
+	stat_index \
+	tryopen
+
+EXTRA_DIST= \
+	CMakeLists.txt \
+	runtest \
+	${TESTS} \
+	bigzero-zip.zip \
+	broken.zip \
+	encrypt.zip \
+	encrypt_plus_extra.zip \
+	filename_duplicate.zip \
+	filename_empty.zip \
+	fileorder.zip \
+	firstsecond.zip \
+	firstsecond-split-deflated.zip \
+	firstsecond-split-stored.zip \
+	foo-stored.zip \
+	incons-archive-comment-longer.zip \
+	incons-archive-comment-shorter.zip \
+	incons-cdoffset.zip \
+	incons-central-compression-method.zip \
+	incons-central-compsize-larger-toolarge.zip \
+	incons-central-compsize-larger.zip \
+	incons-central-compsize-smaller.zip \
+	incons-central-crc.zip \
+	incons-central-date.zip \
+	incons-central-file-comment-longer.zip \
+	incons-central-file-comment-shorter.zip \
+	incons-central-magic-bad.zip \
+	incons-central-magic-bad2.zip \
+	incons-central-size-larger.zip \
+	incons-data.zip \
+	incons-ef-central-size-wrong.zip \
+	incons-ef-local-id-size.zip \
+	incons-ef-local-id.zip \
+	incons-ef-local-incomplete1.zip \
+	incons-ef-local-incomplete2.zip \
+	incons-ef-local-incomplete3.zip \
+	incons-ef-local-incomplete4.zip \
+	incons-ef-local-size.zip \
+	incons-eocd-magic-bad.zip \
+	incons-file-count.zip \
+	incons-local-compression-method.zip \
+	incons-local-compsize-larger.zip \
+	incons-local-compsize-smaller.zip \
+	incons-local-crc.zip \
+	incons-local-filename-long.zip \
+	incons-local-filename-missing.zip \
+	incons-local-filename-short.zip \
+	incons-local-filename.zip \
+	incons-local-magic-bad.zip \
+	incons-local-size-larger.zip \
+	manyfiles-zip.zip \
+	rename_ok.zip \
+	streamed.zip \
+	streamed-zip64.zip \
+	test.zip \
+	test2.zip \
+	test-cp437.zip \
+	test-cp437-comment-utf-8.zip \
+	test-cp437-fc.zip \
+	test-cp437-fc-utf-8-filename.zip \
+	test-utf8.zip \
+	test-utf8-unmarked.zip \
+	testbuffer.zip \
+	testdir.zip \
+	testchanged.zip \
+	testchangedlocal.zip \
+	testcomment.zip \
+	testcomment13.zip \
+	testcommentremoved.zip \
+	testdeflated.zip \
+	testempty.zip \
+	testextrabytes.zip \
+	testfile.txt \
+	testfile.zip \
+	testfile-cp437.zip \
+	testfile-plus-extra.zip \
+	testfile-UTF8.zip \
+	testnottorrent.zip \
+	teststdin.zip \
+	teststored.zip \
+	testtorrent.tzip \
+	zip64.zip
+
+TESTS_ENVIRONMENT=	ZIPCMP=${top_builddir}/src/zipcmp
+# ${srcdir}/runtest
+#LOG_COMPILER=  ${srcdir}/runtest
+TEST_EXTENSIONS= .test
+TEST_LOG_COMPILER= ${srcdir}/runtest
+#AM_TEST_LOG_FLAGS = -s
+
+TESTS= \
+	add_dir.test \
+	add_from_buffer.test \
+	add_from_file.test \
+	add_from_file_duplicate.test \
+	add_from_file_twice_duplicate.test \
+	add_from_filep.test \
+	add_from_stdin.test \
+	add_from_zip_deflated.test \
+	add_from_zip_partial_deflated.test \
+	add_from_zip_partial_stored.test \
+	add_from_zip_stored.test \
+	add_stored.test \
+	delete_add_same.test \
+	delete_invalid.test \
+	delete_last.test \
+	delete_multiple_last.test \
+	delete_multiple_partial.test \
+	delete_renamed_rename.test \
+	encrypt.test \
+	extra_add.test \
+	extra_add_multiple.test \
+	extra_count.test \
+	extra_count_by_id.test \
+	extra_count_ignore_zip64.test \
+	extra_get.test \
+	extra_get_by_id.test \
+	file_comment_encmismatch.test \
+	fopen_unchanged.test \
+	fread.test \
+	get_comment.test \
+	name_locate.test \
+	open_cons_extrabytes.test \
+	open_empty.test \
+	open_empty_2.test \
+	open_extrabytes.test \
+	open_filename_empty.test \
+	open_incons.test \
+	open_many_ok.test \
+	open_new_but_exists.test \
+	open_new_ok.test \
+	open_nonarchive.test \
+	open_nosuchfile.test \
+	open_ok.test \
+	open_truncate.test \
+	open_zip64_ok.test \
+	rename_ascii.test \
+	rename_cp437.test \
+	rename_deleted.test \
+	rename_fail.test \
+	rename_ok.test \
+	rename_utf8.test \
+	rename_utf8_encmismatch.test \
+	set_comment_all.test \
+	set_comment_localonly.test \
+	set_comment_removeglobal.test \
+	set_comment_revert.test \
+	set_compression_deflate_to_deflate.test \
+	set_compression_deflate_to_store.test \
+	set_compression_store_to_deflate.test \
+	set_compression_store_to_store.test \
+	set_compression_unknown.test \
+	stat_index_cp437_guess.test \
+	stat_index_cp437_raw.test \
+	stat_index_cp437_strict.test \
+	stat_index_fileorder.test \
+	stat_index_streamed.test \
+	stat_index_streamed_zip64.test \
+	stat_index_utf8_guess.test \
+	stat_index_utf8_raw.test \
+	stat_index_utf8_strict.test \
+	stat_index_utf8_unmarked_strict.test \
+	stat_index_zip64.test \
+	torrent-already.test
+
+DISABLED_TESTS= \
+	encoding-ascii.test \
+	encoding-cp437.test \
+	encoding-cp437-all.test \
+	encoding-utf-8.test \
+	open_filename_duplicate.test \
+	open_filename_duplicate_consistency.test \
+	open_filename_duplicate_empty.test \
+	open_filename_duplicate_empty_consistency.test \
+	torrent-new.test
+
+AM_CPPFLAGS=-I${top_srcdir}/lib -I../lib -I${top_srcdir}/src
+LDADD=${top_builddir}/lib/libzip.la
+
+check-am: bigzero.zip manyfiles.zip
+
+bigzero.zip: bigzero-zip.zip
+	${UNZIP} -o ${srcdir}/bigzero-zip.zip
+	${TOUCH} ${builddir}/bigzero.zip
+
+manyfiles.zip: manyfiles-zip.zip
+	${UNZIP} -o ${srcdir}/manyfiles-zip.zip
+	${TOUCH} ${builddir}/manyfiles.zip
+
+CLEANFILES=bigzero.zip manyfiles.zip
