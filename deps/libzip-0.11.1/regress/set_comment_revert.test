@@ -1,0 +1,5 @@
+# start changing local and global comments, but revert before closing
+program set_comment_revert
+return 0
+args testcomment.zip
+file testcomment.zip testcomment.zip testcomment.zip
