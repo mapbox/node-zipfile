@@ -27,7 +27,7 @@
        "examples" : "examples",
        "src": "src"
    },
-  "engines"       : { "node": ">= 0.6.13 && < 0.9.0" },
+  "engines"       : { "node": ">= 0.6.13 && < 0.11.0" },
   "scripts"       : {
       "install" : "node-waf configure build",
       "test"    : "make test"
