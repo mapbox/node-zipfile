@@ -1,26 +1,20 @@
-all: zipfile.node
+all: node_zipfile.node
 
-NPROCS:=1
-OS:=$(shell uname -s)
-
-ifeq ($(OS),Linux)
-	NPROCS:=$(shell grep -c ^processor /proc/cpuinfo)
-endif
-ifeq ($(OS),Darwin)
-	NPROCS:=$(shell sysctl -n hw.ncpu)
-endif
-
-install:
-	node-waf -v build install
-
-zipfile.node:
-	node-waf -v build
+node_zipfile.node:
+	`npm explore npm -g -- pwd`/bin/node-gyp-bin/node-gyp build
 
 clean:
-	node-waf -v clean distclean
+	@rm -rf ./build
+	rm -f lib/node_zipfile.node
+	rm -f test/tmp/*
+	rm -rf ./deps/libzip-0.10/
+	rm -rf ./build
+	rm -rf ./out
 
-uninstall:
-	node-waf -v uninstall
+rebuild:
+	@make clean
+	@./configure
+	@make
 
 test:
 	@PATH=./node_modules/mocha/bin:${PATH} && NODE_PATH=./lib:$NODE_PATH mocha -R spec
@@ -37,11 +31,4 @@ lint:
 lintc:
 	@cpplint.py --verbose=3 --filter=-legal,-build/namespaces,-whitespace/line_length src/*.* include/zipfile/*.* 
 
-gyp:
-	rm -rf ./projects/makefiles/
-	python gyp/gyp build.gyp --depth=. -f make --generator-output=./projects/makefiles
-	#./build.py
-	make -j$(NPROCS) -C ./projects/makefiles/ V=1
-	cp projects/makefiles/out/Default/_zipfile.node lib/_zipfile.node
-
-.PHONY: test lint fix lintc fixc gyp
+.PHONY: test lint fix lintc fixc

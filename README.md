@@ -96,14 +96,8 @@ Note: needs cygwin so the .sh shell scripts work that libzip cmake files call.
 
 Then edit lib\zipconf.h removing 'inttypes.h' with:
 
-```cpp
-#ifdef _WIN32
-#include <stdint.h>
-#include <limits.h>
-#else
-#include <inttypes.h>
-#endif
-```
+    #include <stdint.h>
+    #include <limits.h>
 
 Finally build libzip
 

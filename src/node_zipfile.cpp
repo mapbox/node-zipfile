@@ -1,5 +1,6 @@
-#include "zipfile/node_zipfile.h"
+#include "node_zipfile.hpp"
 
+#include <node_version.h>
 #include <node_buffer.h>
 
 #ifdef _WINDOWS
@@ -370,3 +371,21 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req) {
     closure->cb.Dispose();
     delete closure;
 }
+
+
+extern "C" {
+    static void init(Handle<Object> target) {
+        ZipFile::Initialize(target);
+
+        // node-zipfile version
+        target->Set(String::NewSymbol("version"), String::New("0.3.1"));
+
+        // versions of deps
+        Local<Object> versions = Object::New();
+        versions->Set(String::NewSymbol("node"), String::New(NODE_VERSION+1));
+        versions->Set(String::NewSymbol("v8"), String::New(V8::GetVersion()));
+        target->Set(String::NewSymbol("versions"), versions);
+    }
+    NODE_MODULE(node_zipfile, init);
+}
+
