@@ -1,4 +1,4 @@
-var zipfile = require('zipfile');
+var zipfile = require('..');
 var assert = require('assert');
 
 describe('Opening', function(){
