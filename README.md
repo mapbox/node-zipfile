@@ -2,6 +2,7 @@
       
 Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile archives in [node](http://nodejs.org).
 
+[![Build Status](https://secure.travis-ci.org/springmeyer/node-zipfile.png)](http://travis-ci.org/springmeyer/node-zipfile)
 
 ## Example
 
