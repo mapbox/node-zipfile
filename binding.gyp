@@ -1,25 +1,27 @@
 {
   'includes': [ 'deps/common-libzip.gypi' ],
   'variables': {
-      'libzip%':'false',
+      'shared_libzip%':'false',
+      'shared_libzip_includes%':'/usr/lib',
+      'shared_libzip_libpath%':'/usr/include'
   },
   'targets': [
     {
       'target_name': 'node_zipfile',
       'conditions': [
-        ['libzip == "false"', {
+        ['shared_libzip == "false"', {
             'dependencies': [
               'deps/libzip.gyp:libzip'
             ]
         },
         {
             'libraries': [
-               '-L<@(libzip)/lib',
+               '-L<@(shared_libzip_libpath)',
                '-lzip'
             ],
             'include_dirs': [
-               '<@(libzip)/include',
-               '<@(libzip)/lib/libzip/include',
+               '<@(shared_libzip_includes)',
+               '<@(shared_libzip_libpath)/libzip/include',
             ]
         }
         ]

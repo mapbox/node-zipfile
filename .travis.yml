@@ -18,5 +18,5 @@ before_script:
 script:
  - make clean
  - sudo apt-get -qq install libzip-dev
- - npm install --libzip=/usr
+ - npm install --shared_libzip
  - npm test
