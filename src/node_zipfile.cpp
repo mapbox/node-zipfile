@@ -124,7 +124,7 @@ Handle<Value> ZipFile::New(const Arguments& args) {
 	int err;
     char errstr[1024];
     struct zip *za;
-    if ((za=zip_open(input_file.c_str(), 0, &err)) == NULL) {
+    if ((za=zip_open(input_file.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << input_file << " error: " << errstr << "\n";
@@ -197,7 +197,7 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
     int err;
     char errstr[1024];
     struct zip *za;
-    if ((za=zip_open(zf->file_name_.c_str(), 0, &err)) == NULL) {
+    if ((za=zip_open(zf->file_name_.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
@@ -279,7 +279,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args) {
     // libzip is not threadsafe so we open a new zip archive for each thread
     int err;
     char errstr[1024];
-    if ((closure->za=zip_open(zf->file_name_.c_str() , 0, &err)) == NULL) {
+    if ((closure->za=zip_open(zf->file_name_.c_str() , ZIP_CHECKCONS, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
