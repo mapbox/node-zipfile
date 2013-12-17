@@ -1,7 +1,8 @@
 rd /q /s build
 del lib\\node_zipfile.node
+del lib\\libzip.dll
 npm install
-copy build\Release\libzip.dll lib
+@rem copy build\Release\libzip.dll lib
 rem test!
-set NODE_PATH=lib
+@rem set NODE_PATH=lib
 npm test
