@@ -23,4 +23,12 @@ describe('Opening', function(){
         assert.equal(zf.count, 2);
         assert.deepEqual(zf.names, ['one.txt', 'two.txt']);
     });
+
+    it('test opening invalid archive', function(){
+        // created by doing:
+        // echo 'this is not a zip archive' > test/data/invalid.zip
+        assert.throws(function() { new zipfile.ZipFile('./test/data/invalid.zip'); });
+        // echo 'bogus data' > test/data/bogus.zip
+        assert.throws(function() { new zipfile.ZipFile('./test/data/bogus.zip'); });
+    });
 });

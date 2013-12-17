@@ -1,4 +1,6 @@
-# python ./compress.py libzip-0.11.1-mod.tar.gz libzip-0.11.1
+# hg clone http://hg.nih.at/libzip
+# mv libzip libzip-0.11.1
+# python ./compress.py libzip-0.11.1-mod2.tar.gz libzip-0.11.1
 import sys
 import tarfile
 import os

@@ -45,7 +45,7 @@
         {
           'action_name': 'unpack_libzip_dep',
           'inputs': [
-            './libzip-<@(libzip_version)-mod.tar.gz'
+            './libzip-<@(libzip_version)-mod2.tar.gz'
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/libzip-<@(libzip_version)/lib/zip_add.c',
@@ -133,7 +133,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/libzip-<@(libzip_version)/lib/zip_unchange_data.c',
             '<(SHARED_INTERMEDIATE_DIR)/libzip-<@(libzip_version)/lib/zip_utf-8.c'
           ],
-          'action': ['python','./extract.py','./libzip-<@(libzip_version)-mod.tar.gz','<(SHARED_INTERMEDIATE_DIR)']
+          'action': ['python','./extract.py','./libzip-<@(libzip_version)-mod2.tar.gz','<(SHARED_INTERMEDIATE_DIR)']
         }
       ],
       'direct_dependent_settings': {
