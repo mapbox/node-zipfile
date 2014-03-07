@@ -1,11 +1,11 @@
 all: node_zipfile.node
 
 node_zipfile.node:
-	`npm explore npm -g -- pwd`/bin/node-gyp-bin/node-gyp build
+	PATH=`npm explore npm -g -- pwd`/bin/node-gyp-bin:./node_modules/.bin:$${PATH} && ./node_modules/.bin/node-pre-gyp build
 
 clean:
 	@rm -rf ./build
-	rm -f lib/node_zipfile.node
+	rm -rf lib/bindings/
 	rm -f test/tmp/*
 	rm -rf ./deps/libzip-0.10/
 	rm -rf ./build
