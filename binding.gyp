@@ -7,7 +7,7 @@
   },
   'targets': [
     {
-      'target_name': 'node_zipfile',
+      'target_name': '<(module_name)',
       'conditions': [
         ['shared_libzip == "false"', {
             'dependencies': [
@@ -33,11 +33,11 @@
     {
       'target_name': 'action_after_build',
       'type': 'none',
-      'dependencies': [ 'node_zipfile' ],
+      'dependencies': [ '<(module_name)' ],
       'copies': [
           {
-            'files': [ '<(PRODUCT_DIR)/node_zipfile.node' ],
-            'destination': './lib/binding/'
+            'files': [ '<(PRODUCT_DIR)/<(module_name).node' ],
+            'destination': '<(module_path)'
           }
       ],
       'conditions': [
@@ -45,7 +45,7 @@
               'copies': [
                 {
                   'files': [ '<(PRODUCT_DIR)/libzip.dll' ],
-                  'destination': 'lib/'
+                  'destination': '<(module_path)'
                 }
               ]
           }]
