@@ -14,17 +14,26 @@
   "author"        : "Dane Springmeyer <dane@dbsgeo.com>",
   "contributors"  : [],
   "licenses"      : ["BSD"],
-  "dependencies"  : {},
+  "dependencies"  : {
+    "node-pre-gyp": "0.5.x"
+  },
+  "bundledDependencies":["node-pre-gyp"],
   "devDependencies": {
     "mocha": "*",
     "mkdirp": "~0.3.0",
     "jshint"  : "~0.5.x"
-   },
+  },
   "bin"           : { 
-       "unzip.js" : "./bin/unzip.js" 
-   },
+    "unzip.js"    : "./bin/unzip.js"
+  },
   "engines"       : { "node": ">= 0.6.13 < 0.11.0" },
   "scripts"       : {
-      "test"    : "mocha -R spec"
-   }
+    "test"        : "mocha -R spec",
+    "install"     : "node-pre-gyp install --fallback-to-build"
+  },
+  "binary": {
+    "module_name" : "node_zipfile",
+    "module_path" : "./lib/binding/",
+    "host"        : "https://mapbox-node-pre-gyp.s3.amazonaws.com/"
+  }
 }
