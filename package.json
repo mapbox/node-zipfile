@@ -34,6 +34,6 @@
   "binary": {
     "module_name" : "node_zipfile",
     "module_path" : "./lib/",
-    "host"        : "https://your_module.s3-us-west-1.amazonaws.com"
+    "host"        : "https://mapbox-node-pre-gyp.s3.amazonaws.com/"
   }
 }
