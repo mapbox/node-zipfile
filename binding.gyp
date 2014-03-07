@@ -37,7 +37,7 @@
       'copies': [
           {
             'files': [ '<(PRODUCT_DIR)/node_zipfile.node' ],
-            'destination': './lib/'
+            'destination': './lib/binding/'
           }
       ],
       'conditions': [
