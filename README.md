@@ -2,7 +2,7 @@
       
 Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile archives in [node](http://nodejs.org).
 
-[![Build Status](https://secure.travis-ci.org/springmeyer/node-zipfile.png)](http://travis-ci.org/springmeyer/node-zipfile)
+[![Build Status](https://secure.travis-ci.org/mapbox/node-zipfile.png)](http://travis-ci.org/mapbox/node-zipfile)
 
 ## Example
 
@@ -29,7 +29,7 @@ You can install the latest tag via npm:
 
 Or install from github master:
 
-    git clone git://github.com/springmeyer/node-zipfile.git
+    git clone git://github.com/mapbox/node-zipfile.git
     cd node-zipfile
     npm install
 

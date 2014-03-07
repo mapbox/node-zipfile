@@ -4,11 +4,11 @@
   "main"          : "./lib/index.js",
   "description"   : "C++ library for handling zipfiles in node",
   "keywords"      : ["zipfile", "uncompress", "unzip", "zlib"],
-  "url"           : "http://github.com/springmeyer/node-zipfile",
+  "url"           : "http://github.com/mapbox/node-zipfile",
    "repositories" : [
        {
            "type" : "git",
-           "url"  : "git://github.com/springmeyer/node-zipfile.git" 
+           "url"  : "git://github.com/mapbox/node-zipfile.git"
        } 
    ],
   "author"        : "Dane Springmeyer <dane@dbsgeo.com>",
