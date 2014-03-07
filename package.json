@@ -33,7 +33,7 @@
   },
   "binary": {
     "module_name" : "node_zipfile",
-    "module_path" : "./lib/",
+    "module_path" : "./lib/binding/",
     "host"        : "https://mapbox-node-pre-gyp.s3.amazonaws.com/"
   }
 }
