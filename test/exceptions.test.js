@@ -1,4 +1,4 @@
-var zipfile = require('../lib/zipfile');
+var zipfile = require('..');
 var assert = require('assert');
 
 describe('Exceptions', function(){

@@ -1,4 +1,4 @@
-var zipfile = require('../lib/zipfile');
+var zipfile = require('..');
 var assert = require('assert');
 var fs = require('fs');
 var existsSync = require('fs').existsSync || require('path').existsSync;
