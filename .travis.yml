@@ -1,21 +1,56 @@
-language: node_js
+language: cpp
 
-node_js:
- - "0.10"
- - "0.8"
+compiler:
+ - gcc
+ - clang
+
+env:
+  matrix:
+   - NODE_NVM_VERSION="0.10"
+   - NODE_NVM_VERSION="0.8"
 
 before_install:
+ - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
+ # here we set up the node version on the fly based on the matrix value.
+ # This is done manually so that it is easy to flip the 'language' to
+ # objective-c in another branch (to run the same travis.yml on OS X)
+ - git clone https://github.com/creationix/nvm.git ../.nvm
+ - source ../.nvm/nvm.sh
+ - nvm install $NODE_NVM_VERSION
+ - nvm use $NODE_NVM_VERSION
+ - node --version
+ - npm --version
  - sudo apt-get -qq update
+ - npm install mocha
+ - npm install aws-sdk
 
 install:
- - npm install mocha
+ # test building from source
+ - npm install --build-from-source
+ - npm test
+ - node-pre-gyp package testpackage
+ - npm test
 
 before_script:
- - npm install
- - npm test
+ # test publishing and installing from remote if
+ # [publish binary] is present in commit message
+ - PUBLISH_BINARY=false
+ - if [[ ${CXX} == "g++" ]] && test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then echo yes;PUBLISH_BINARY=true; fi;
+ - if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp publish info; rm -rf {build,lib/binding}; npm install --fallback-to-build=false; npm test; fi
+ - node-pre-gyp clean
 
 script:
+ # test building with against shared libzip
  - make clean
  - sudo apt-get -qq install libzip-dev
- - npm install --shared_libzip
+ - npm install --build-from-source --shared_libzip
  - npm test
+
+after_success:
+ # if success then query and display all published binaries
+ - node-pre-gyp info
+
+env:
+  global:
+   - secure: hBUfRqVPovL7PVOJONI8sakIUtggpM74qMPdi5zaMpJhuV/QWfROOVc05ULEr1P0Fra2WpQ62mp8lfa1NbB6sQfT/8Y6u0lucf9SsIUBJzDrSmfXv2NDgpJn9RQmfsZgLfDuTwRLVROkNSTowUq3tnhDIzX/NyB7uOp1TZNEJ8A=
+   - secure: xWyq1Ys9lpMUVCh73q5YDDfC4nLeeydqIS4S+lJ/t/jUCNHDwe1x5XrxRIALi74qNmHg6eTcOeEW5iot/sf1oUJIA1oPt9iMIMolg9iYWJKWN4E6gWcIigYu9ZDl3GJsHyiNs/dVlZjzY1YKzyvgZ2MRfy4l0rPShCxROoCiCIM=

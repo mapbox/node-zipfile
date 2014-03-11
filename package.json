@@ -5,12 +5,10 @@
   "description"   : "C++ library for handling zipfiles in node",
   "keywords"      : ["zipfile", "uncompress", "unzip", "zlib"],
   "url"           : "http://github.com/mapbox/node-zipfile",
-   "repositories" : [
-       {
+  "repository" : {
            "type" : "git",
            "url"  : "git://github.com/mapbox/node-zipfile.git"
-       } 
-   ],
+  },
   "author"        : "Dane Springmeyer <dane@dbsgeo.com>",
   "contributors"  : [],
   "licenses"      : ["BSD"],
@@ -32,8 +30,9 @@
     "install"     : "node-pre-gyp install --fallback-to-build"
   },
   "binary": {
-    "module_name" : "node_zipfile",
+    "module_name" : "zipfile",
     "module_path" : "./lib/binding/",
-    "host"        : "https://mapbox-node-pre-gyp.s3.amazonaws.com/"
+    "host"        : "https://mapbox-node-binary.s3.amazonaws.com",
+    "remote_path" : "./{module_name}/v{version}"
   }
 }

@@ -15,28 +15,24 @@ Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile arch
     buffer.toString()
     'PROJCS["Google Maps Global Mercator",GEOGCS .... '
 
-
 ## Depends
 
- - Node >= 0.6.13
- - optionally depends on external libzip (by default builds against bundled version)
+ - Node v0.10.x or v0.8.x
 
 ## Installation
 
-You can install the latest tag via npm:
+Install from binary:
 
-    npm install zipfile
-
-Or install from github master:
-
-    git clone git://github.com/mapbox/node-zipfile.git
-    cd node-zipfile
     npm install
+
+Install from source:
+
+    npm install --build-from-source
 
 ## Dynamically linking against libzip
 
 `node-zipfile` depends on libzip, but by default
-bundles a copy in deps/ which is statically linked.
+bundles a copy in deps/ which is statically linked and packaged as a binary.
 
 If you want to use an external libzip first install it:
 
@@ -50,11 +46,11 @@ OS X:
 
 Then configure node-zipfile with the --shared_libzip option:
  
-    npm install --shared_libzip
+    npm install  --build-from-source --shared_libzip
 
 If you installed libzip in a custom location then configure like:
   
-    npm install --shared_libzip --shared_libzip_includes=/opt/local/include --shared_libzip_libpath=/opt/local/lib
+    npm install  --build-from-source --shared_libzip --shared_libzip_includes=/opt/local/include --shared_libzip_libpath=/opt/local/lib
 
 ## License
 

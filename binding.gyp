@@ -26,6 +26,9 @@
         }
         ]
       ],
+      'defines': [
+        'MODULE_NAME=<(module_name)'
+      ],
       'sources': [
         'src/node_zipfile.cpp'
       ],
