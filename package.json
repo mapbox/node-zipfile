@@ -32,7 +32,7 @@
     "install"     : "node-pre-gyp install --fallback-to-build"
   },
   "binary": {
-    "module_name" : "node_zipfile",
+    "module_name" : "zipfile",
     "module_path" : "./lib/binding/",
     "host"        : "https://mapbox-node-binary.s3.amazonaws.com",
     "remote_path" : "./{module_name}/v{version}"
