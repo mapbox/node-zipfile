@@ -9,13 +9,30 @@ before_install:
 
 install:
  - npm install mocha
+ - npm install aws-sdk
 
 before_script:
  - npm install --build-from-source
  - npm test
+ - node-pre-gyp package publish
+ - node-pre-gyp clean
 
 script:
  - make clean
  - sudo apt-get -qq install libzip-dev
  - npm install --build-from-source --shared_libzip
  - npm test
+ # test installing from remote
+ - make clean
+ - npm install --fallback-to-build=false
+ - npm test
+ - node-pre-gyp clean
+
+after_success:
+# if success then query and display all published binaries
+ - node-pre-gyp info
+
+env:
+  global:
+  - secure: WCR6L4yZbKzmD9LkPmKKvBit2hTQgQ/a8TAGXh2roWtjhoOI0CcoXuQU32cgtIpMKhBJigi8q8lDW/ifK+oR62xzSLyv7zuVMgDVr7KxTsGbV7kuGfGV0Noo9FxyRZg6ngkjby1JXhnc8T9gDoCu5BkANsfe2MdwjbBQ6MErn8A=
+  - secure: iJ1xkC9DLAi9uhzQ/s9KY/sen+q96PdIx0htHkLQakbaRj9cuD9G/q04PLA8AMQaQhgVOuid0pR3saifSDARzXtDpTKBaLq3CLhUnkngaP0uTVY3XNPCcZvqr5qbx5eX395OlatIWiQEJH4jXhFigc7x/EOBEWvLUTC7kvFNz3U=
