@@ -35,7 +35,7 @@ before_script:
  # test publishing and installing from remote if
  # [publish binary] is present in commit message
  - PUBLISH_BINARY=false
- - if [[ ${CXX} == "g++"]] && test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then echo yes;PUBLISH_BINARY=true; fi;
+ - if [[ ${CXX} == "g++" ]] && test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then echo yes;PUBLISH_BINARY=true; fi;
  - if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp publish info; rm -rf {build,lib/binding}; npm install --fallback-to-build=false; npm test; fi
  - node-pre-gyp clean
 
