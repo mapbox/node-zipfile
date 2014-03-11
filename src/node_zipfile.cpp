@@ -372,7 +372,6 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req) {
     delete closure;
 }
 
-
 extern "C" {
     static void init(Handle<Object> target) {
         ZipFile::Initialize(target);
@@ -386,6 +385,7 @@ extern "C" {
         versions->Set(String::NewSymbol("v8"), String::New(V8::GetVersion()));
         target->Set(String::NewSymbol("versions"), versions);
     }
-    NODE_MODULE(zipfile, init);
+    #define MAKE_MODULE(_modname) NODE_MODULE( _modname, init)
+    MAKE_MODULE(MODULE_NAME)
 }
 
