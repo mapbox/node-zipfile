@@ -5,6 +5,7 @@ node_js:
  - "0.8"
 
 before_install:
+ - echo $PATH
  - sudo apt-get -qq update
  - npm install mocha
  - npm install aws-sdk
@@ -14,7 +15,9 @@ install:
  - npm install --build-from-source
  - npm test
  # now
+ - echo $PATH
  - which node-pre-gyp
+ - which node-gyp
  - node-pre-gyp package unpublish publish
  - node-pre-gyp clean
 
