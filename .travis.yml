@@ -11,11 +11,11 @@ install:
  - npm install mocha
 
 before_script:
- - npm install
+ - npm install --build-from-source
  - npm test
 
 script:
  - make clean
  - sudo apt-get -qq install libzip-dev
- - npm install --shared_libzip
+ - npm install --build-from-source --shared_libzip
  - npm test
