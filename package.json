@@ -34,6 +34,7 @@
   "binary": {
     "module_name" : "node_zipfile",
     "module_path" : "./lib/binding/",
-    "host"        : "https://mapbox-node-binary.s3.amazonaws.com"
+    "host"        : "https://mapbox-node-binary.s3.amazonaws.com",
+    "remote_path" : "./{module_name}"
   }
 }
