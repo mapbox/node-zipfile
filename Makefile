@@ -1,6 +1,6 @@
-all: node_zipfile.node
+all: zipfile.node
 
-node_zipfile.node:
+zipfile.node:
 	PATH=`npm explore npm -g -- pwd`/bin/node-gyp-bin:./node_modules/.bin:$${PATH} && ./node_modules/.bin/node-pre-gyp build
 
 clean:

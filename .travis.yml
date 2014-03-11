@@ -18,15 +18,16 @@ before_script:
  - node-pre-gyp clean
 
 script:
- - make clean
- - sudo apt-get -qq install libzip-dev
- - npm install --build-from-source --shared_libzip
- - npm test
- # test installing from remote
+# test installing from remote
  - make clean
  - npm install --fallback-to-build=false
  - npm test
  - node-pre-gyp clean
+# test building with share libzip
+ - make clean
+ - sudo apt-get -qq install libzip-dev
+ - npm install --build-from-source --shared_libzip
+ - npm test
 
 after_success:
 # if success then query and display all published binaries
