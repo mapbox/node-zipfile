@@ -6,31 +6,32 @@ node_js:
 
 before_install:
  - sudo apt-get -qq update
-
-install:
  - npm install mocha
  - npm install aws-sdk
 
-before_script:
+install:
+ # test building from source
  - npm install --build-from-source
  - npm test
  - node-pre-gyp package publish
  - node-pre-gyp clean
 
-script:
-# test installing from remote
+before_script:
+ # test installing from remote
  - make clean
  - npm install --fallback-to-build=false
  - npm test
  - node-pre-gyp clean
-# test building with share libzip
+
+script:
+ # test building with against shared libzip
  - make clean
  - sudo apt-get -qq install libzip-dev
  - npm install --build-from-source --shared_libzip
  - npm test
 
 after_success:
-# if success then query and display all published binaries
+ # if success then query and display all published binaries
  - node-pre-gyp info
 
 env:
