@@ -13,7 +13,9 @@ install:
  # test building from source
  - npm install --build-from-source
  - npm test
- - node-pre-gyp package publish
+ # now
+ - which node-pre-gyp
+ - node-pre-gyp package unpublish publish
  - node-pre-gyp clean
 
 before_script:
