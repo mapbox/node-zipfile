@@ -23,9 +23,10 @@ before_install:
  - nvm use $NODE_NVM_VERSION
  - node --version
  - npm --version
- - sudo apt-get -qq update
  - npm install mocha
  - npm install aws-sdk
+ - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+ - if [[ "$platform" == 'linux' ]]; then sudo apt-get -qq update; fi;
 
 install:
  # test building from source
@@ -45,8 +46,8 @@ before_script:
 script:
  # test building with against shared libzip
  - make clean
- - sudo apt-get -qq install libzip-dev
- - npm install --build-from-source --shared_libzip
+ - if [[ "$platform" == 'linux' ]]; then sudo apt-get -qq install libzip-dev; npm install --build-from-source --shared_libzip; fi
+ - if [[ "$platform" == 'darwin' ]]; then brew install libzip; npm install --build-from-source --shared_libzip --shared_libzip_includes=`brew --prefix`/include --shared_libzip_libpath=`brew --prefix`/lib; fi
  - npm test
 
 after_success:
