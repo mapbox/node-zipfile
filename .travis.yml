@@ -8,6 +8,9 @@ env:
   matrix:
    - NODE_NVM_VERSION="0.10"
    - NODE_NVM_VERSION="0.8"
+  global:
+   - secure: hBUfRqVPovL7PVOJONI8sakIUtggpM74qMPdi5zaMpJhuV/QWfROOVc05ULEr1P0Fra2WpQ62mp8lfa1NbB6sQfT/8Y6u0lucf9SsIUBJzDrSmfXv2NDgpJn9RQmfsZgLfDuTwRLVROkNSTowUq3tnhDIzX/NyB7uOp1TZNEJ8A=
+   - secure: xWyq1Ys9lpMUVCh73q5YDDfC4nLeeydqIS4S+lJ/t/jUCNHDwe1x5XrxRIALi74qNmHg6eTcOeEW5iot/sf1oUJIA1oPt9iMIMolg9iYWJKWN4E6gWcIigYu9ZDl3GJsHyiNs/dVlZjzY1YKzyvgZ2MRfy4l0rPShCxROoCiCIM=
 
 before_install:
  - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
@@ -49,8 +52,3 @@ script:
 after_success:
  # if success then query and display all published binaries
  - node-pre-gyp info
-
-env:
-  global:
-   - secure: hBUfRqVPovL7PVOJONI8sakIUtggpM74qMPdi5zaMpJhuV/QWfROOVc05ULEr1P0Fra2WpQ62mp8lfa1NbB6sQfT/8Y6u0lucf9SsIUBJzDrSmfXv2NDgpJn9RQmfsZgLfDuTwRLVROkNSTowUq3tnhDIzX/NyB7uOp1TZNEJ8A=
-   - secure: xWyq1Ys9lpMUVCh73q5YDDfC4nLeeydqIS4S+lJ/t/jUCNHDwe1x5XrxRIALi74qNmHg6eTcOeEW5iot/sf1oUJIA1oPt9iMIMolg9iYWJKWN4E6gWcIigYu9ZDl3GJsHyiNs/dVlZjzY1YKzyvgZ2MRfy4l0rPShCxROoCiCIM=
