@@ -155,13 +155,19 @@
             'include_dirs': [
                './win-include'
             ]
-          }, {
+          }],
+          ['OS=="solaris"', {
+            'include_dirs': [
+               './solaris-include'
+            ]
+          } , {
             'include_dirs': [
                './unix-include'
             ]
-          }]
-        ],
-      },
+            }
+          ]
+        ]
+      }
     },
     {
       'target_name': 'libzip',
@@ -182,12 +188,18 @@
             'include_dirs': [
                './win-include'
             ]
-          }, {
+          }],
+          ['OS=="solaris"', {
+            'include_dirs': [
+               './solaris-include'
+            ]
+          } , {
             'include_dirs': [
                './unix-include'
             ]
-          }]
-       ],
+            }
+          ]
+      ],
       'dependencies': [
           'action_before_build',
           'zlib/zlib.gyp:zlib'
@@ -303,12 +315,18 @@
             'include_dirs': [
                './win-include'
             ]
-          }, {
+          }],
+          ['OS=="solaris"', {
+            'include_dirs': [
+               './solaris-include'
+            ]
+          } , {
             'include_dirs': [
                './unix-include'
             ]
-          }]
-        ],
+            }
+          ]
+        ]
       },
       'export_dependent_settings': [
         'action_before_build',
