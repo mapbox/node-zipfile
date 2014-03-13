@@ -50,7 +50,9 @@ Then configure node-zipfile with the --shared_libzip option:
 
 If you installed libzip in a custom location then configure like:
   
-    npm install  --build-from-source --shared_libzip --shared_libzip_includes=/opt/local/include --shared_libzip_libpath=/opt/local/lib
+    npm install  --build-from-source --shared_libzip \
+      --shared_libzip_includes=/opt/local/include \
+      --shared_libzip_libpath=/opt/local/lib
 
 ## License
 
