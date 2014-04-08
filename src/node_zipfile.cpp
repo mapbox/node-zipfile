@@ -343,8 +343,8 @@ void ZipFile::Work_ReadFile(uv_work_t* req) {
                 closure->error_name = s.str();
             }
         }
+        if (zf_ptr) zip_fclose(zf_ptr);
     }
-    zip_fclose(zf_ptr);
 }
 
 void ZipFile::Work_AfterReadFile(uv_work_t* req) {
