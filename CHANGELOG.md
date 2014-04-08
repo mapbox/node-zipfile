@@ -2,6 +2,7 @@
 
 ## v0.5.1
 
+ - Fixed Solaris build
  - Fixed potential segfault when an invalid filename is requested from `zipfile.ReadFile` (#46)
 
 ## v0.5.0
