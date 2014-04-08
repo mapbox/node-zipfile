@@ -16,4 +16,16 @@ describe('Exceptions', function(){
       assert.throws(function() { zf.readFileSync('foo'); });
     });
 
+    it('should throw as the file in the archive does not exit', function(done){
+      var zf = new zipfile.ZipFile('./test/data/World_mercator.zip');
+      var remaining = zf.names.length;
+      zf.names.forEach(function(name) {
+          zf.readFile(name.toLowerCase(),function(err, buffer) {
+              assert.equal(err.message.indexOf('No file found'),0);
+              remaining--;
+              if (remaining <= 0) done();
+          });
+      });
+    });
+
 });
