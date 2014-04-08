@@ -123,12 +123,12 @@ Handle<Value> ZipFile::New(const Arguments& args) {
 #endif
 	int err;
     char errstr[1024];
-    struct zip *za;
+    struct zip *za = NULL;
     if ((za=zip_open(input_file.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << input_file << " error: " << errstr << "\n";
-        zip_close(za);
+        if (za) zip_close(za);
         return ThrowException(Exception::Error(
                                   String::New(s.str().c_str())));
     }
@@ -144,7 +144,7 @@ Handle<Value> ZipFile::New(const Arguments& args) {
 		std::string name = st.name;
         zf->names_.push_back(name);
     }
-    zip_close(za);
+    if (za) zip_close(za);
     zf->Wrap(args.This());
     return args.This();
 }
@@ -196,23 +196,23 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
 
     int err;
     char errstr[1024];
-    struct zip *za;
+    struct zip *za = NULL;
     if ((za=zip_open(zf->file_name_.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
-        zip_close(za);
+        if (za) zip_close(za);
         return ThrowException(Exception::Error(
             String::New(s.str().c_str())));
     }
 
-    struct zip_file *zf_ptr;
+    struct zip_file *zf_ptr = NULL;
 
     if ((zf_ptr=zip_fopen_index(za, idx, 0)) == NULL) {
         if (zf_ptr) zip_fclose(zf_ptr);
+        if (za) zip_close(za);
         std::stringstream s;
         s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(za) << "\n";
-        zip_close(za);
         return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
@@ -229,14 +229,14 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
     if (result < 0) {
         std::stringstream s;
         s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
-        zip_fclose(zf_ptr);
-        zip_close(za);
+        if (zf_ptr) zip_fclose(zf_ptr);
+        if (za) zip_close(za);
         return ThrowException(Exception::Error(String::New(s.str().c_str())));
     }
 
     node::Buffer *retbuf = Buffer::New(reinterpret_cast<char *>(&data[0]), data.size());
-    zip_fclose(zf_ptr);
-    zip_close(za);
+    if (zf_ptr) zip_fclose(zf_ptr);
+    if (za) zip_close(za);
     return scope.Close(retbuf->handle_);
 }
 
@@ -275,6 +275,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args) {
 
     closure_t *closure = new closure_t();
     closure->request.data = closure;
+    closure->za = NULL;
 
     // libzip is not threadsafe so we open a new zip archive for each thread
     int err;
@@ -283,7 +284,7 @@ Handle<Value> ZipFile::readFile(const Arguments& args) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
-        zip_close(closure->za);
+        if (closure->za) zip_close(closure->za);
         closure->cb.Dispose();
         delete closure;
         return ThrowException(Exception::Error(
@@ -366,7 +367,7 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req) {
     if (try_catch.HasCaught()) {
         FatalException(try_catch);
     }
-    zip_close(closure->za);
+    if (closure->za) zip_close(closure->za);
     closure->zf->Unref();
     closure->cb.Dispose();
     delete closure;
