@@ -1,7 +1,6 @@
 language: objective-c
 
 compiler:
- - gcc
  - clang
 
 env:
@@ -40,15 +39,17 @@ before_script:
  # test publishing and installing from remote if
  # [publish binary] is present in commit message
  - PUBLISH_BINARY=false
- - if [[ ${CXX} == "g++" ]] && test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then echo yes;PUBLISH_BINARY=true; fi;
+ - if test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then echo yes;PUBLISH_BINARY=true; fi;
  - if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp publish info; rm -rf {build,lib/binding}; npm install --fallback-to-build=false; npm test; fi
- - node-pre-gyp clean
 
 script:
  # test building with against shared libzip
  - make clean
+ - node-pre-gyp clean
+ - rm -rf lib/binding
  - if [[ "$platform" == 'linux' ]]; then sudo apt-get -qq install libzip-dev; npm install --build-from-source --shared_libzip; fi
  - if [[ "$platform" == 'darwin' ]]; then brew install libzip; npm install --build-from-source --shared_libzip --shared_libzip_includes=`brew --prefix`/include --shared_libzip_libpath=`brew --prefix`/lib; fi
+ # crashing for some reason on travis os x
  - npm test
 
 after_success:

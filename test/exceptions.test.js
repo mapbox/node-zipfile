@@ -16,7 +16,7 @@ describe('Exceptions', function(){
       assert.throws(function() { zf.readFileSync('foo'); });
     });
 
-    it('should throw as the file in the archive does not exit', function(done){
+    it('should not crash if we read invalid filename', function(done){
       var zf = new zipfile.ZipFile('./test/data/World_mercator.zip');
       var remaining = zf.names.length;
       zf.names.forEach(function(name) {
