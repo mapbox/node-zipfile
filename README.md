@@ -54,6 +54,12 @@ If you installed libzip in a custom location then configure like:
       --shared_libzip_includes=/opt/local/include \
       --shared_libzip_libpath=/opt/local/lib
 
+If you installed libzip with homebrew do:
+
+    npm install --build-from-source --shared_libzip \
+      --shared_libzip_includes=`brew --prefix`/include \
+      --shared_libzip_libpath=`brew --prefix`/lib
+
 ## License
 
   BSD, see LICENSE.txt
