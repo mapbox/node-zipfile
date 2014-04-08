@@ -14,6 +14,7 @@ env:
 
 before_install:
  - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
+ - export PATH=`pwd`/node_modules/.bin:$PATH
  # here we set up the node version on the fly based on the matrix value.
  # This is done manually so that it is easy to flip the 'language' to
  # objective-c in another branch (to run the same travis.yml on OS X)
