@@ -7,3 +7,4 @@ deps/libzip-0.10
 lib/binding
 node_modules
 test/tmp
+npm-debug.log

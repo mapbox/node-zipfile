@@ -10,3 +10,4 @@ Makefile
 scripts
 .travis.yml
 examples
+npm-debug.log

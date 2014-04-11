@@ -1,5 +1,9 @@
 # changelog
 
+## v0.5.2
+
+ - Fixed bundling of node-pre-gyp
+
 ## v0.5.1
 
  - Fixed Solaris build
