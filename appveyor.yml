@@ -11,6 +11,7 @@ install:
   - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
   - node --version
   - npm --version
+  - cmd: SET PATH=c:\python27;%PATH%
   - npm install --build-from-source
   - npm install mocha
   - .\node_modules\.bin\node-pre-gyp package testpackage
