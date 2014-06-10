@@ -5,7 +5,7 @@ zipfile.node:
 
 clean:
 	@rm -rf ./build
-	rm -rf lib/bindings/
+	rm -rf lib/binding/
 	rm -f test/tmp/*
 	rm -rf ./deps/libzip-0.10/
 	rm -rf ./build
