@@ -3,6 +3,8 @@
 Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile archives in [node](http://nodejs.org).
 
 [![Build Status](https://secure.travis-ci.org/mapbox/node-zipfile.png)](http://travis-ci.org/mapbox/node-zipfile)
+[![Build status](https://ci.appveyor.com/api/projects/status/fb8n98fc1smsjmum)](https://ci.appveyor.com/project/Mapbox/node-zipfile)
+[![Dependencies](https://david-dm.org/mapbox/node-zipfile.png)](https://david-dm.org/mapbox/node-zipfile)
 
 ## Example
 
