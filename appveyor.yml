@@ -1,27 +1,34 @@
 environment:
+  node_pre_gyp_accessKeyId:
+    secure: T1Pel/pv9SVfiVvZW8TLZnvZX6M4HQTiR7LUZnF1tuY=
+  node_pre_gyp_secretAccessKey:
+    secure: 8f5eTxMHpuVGHon2wbqrZuq3wzQfEuXMCcOyafBLza0T2VIOoBjbjDbgRbyRIzsT
   matrix:
-    - nodejs_version: 0.8
-    - nodejs_version: 0.10
-    - nodejs_version: 0.11
+    - nodejs_version: 0.10.29
+    - nodejs_version: 0.8.26
+    - nodejs_version: 0.11.13
 
 platform:
   - x64
   - x86
 
 install:
-  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
+  - ps: Update-NodeJsInstallation $env:nodejs_version $env:Platform
   - node --version
   - npm --version
-  - cmd: SET PATH=c:\python27;%PATH%
-  - npm install --build-from-source
-  - npm install mocha
-  - .\node_modules\.bin\node-pre-gyp package testpackage
+  - SET PATH=c:\python27;%PATH%
+  - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;%PATH%
+  # add local node-pre-gyp dir to path
+  - SET PATH=node_modules\.bin;%PATH%
+  # otherwise node-gyp that comes with node v0.8.x is used and doesn't yet know about --msvs_version=2013
+  - npm install node-gyp
+  - npm install --build-from-source  --msvs_version=2013
   - npm test
+  - node-pre-gyp package
+  # make commit message env var shorter
+  - SET CM=%APPVEYOR_REPO_COMMIT_MESSAGE%
+  - if not "%CM%" == "%CM:[publish binary]=%" node-pre-gyp --msvs_version=2013 publish
 
 build: OFF
-
 test: OFF
-
-test_script: OFF
-
 deploy: OFF

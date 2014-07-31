@@ -1,5 +1,9 @@
 # changelog
 
+## v0.5.3
+
+ - Now supporting node v.11.x
+
 ## v0.5.2
 
  - Fixed bundling of node-pre-gyp
