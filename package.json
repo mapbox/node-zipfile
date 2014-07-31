@@ -18,9 +18,9 @@
   },
   "bundledDependencies":["node-pre-gyp"],
   "devDependencies": {
-    "mocha": "*",
+    "mocha": "1.x",
     "mkdirp": "~0.5.0",
-    "jshint"  : "~0.5.x"
+    "aws-sdk" : "~2.0.10"
   },
   "bin"           : { 
     "unzip.js"    : "./bin/unzip.js"

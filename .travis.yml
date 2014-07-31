@@ -24,8 +24,6 @@ before_install:
  - nvm use $NODE_NVM_VERSION
  - node --version
  - npm --version
- - npm install mocha
- - npm install aws-sdk
  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
  - if [[ "$platform" == 'linux' ]]; then sudo apt-get -qq update; fi;
 
