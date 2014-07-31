@@ -8,6 +8,15 @@
   'targets': [
     {
       'target_name': '<(module_name)',
+      "include_dirs" : [
+          "<!(node -e \"require('nan')\")"
+      ],
+      'defines': [
+        'MODULE_NAME=<(module_name)'
+      ],
+      'sources': [
+        'src/node_zipfile.cpp'
+      ],
       'conditions': [
         ['shared_libzip == "false"', {
             'dependencies': [
@@ -25,13 +34,7 @@
             ]
         }
         ]
-      ],
-      'defines': [
-        'MODULE_NAME=<(module_name)'
-      ],
-      'sources': [
-        'src/node_zipfile.cpp'
-      ],
+      ]
     },
     {
       'target_name': 'action_after_build',

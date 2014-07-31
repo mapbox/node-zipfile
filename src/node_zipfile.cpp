@@ -1,105 +1,45 @@
 #include "node_zipfile.hpp"
 
 #include <node_version.h>
-#include <node_buffer.h>
+
+// libzip
+extern "C" {
+ #include <zlib.h>
+ #include <errno.h>
+ #include <zip.h>
+}
 
 #ifdef _WINDOWS
-#include <Windows.h>
+#include "unicode_conversion_helpers.hpp"
 #endif
 
 // std
 #include <sstream>
 #include <iostream>
-#include <vector>
-#include <string>
 #include <algorithm>
 
 #define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
 
-#ifdef _WINDOWS
-std::string wstring2string(const std::wstring& s)
-{
-    DWORD size = WideCharToMultiByte(CP_UTF8,
-	                                 0,
-	                                 s.c_str(),
-	                                 -1,
-	                                 NULL,
-	                                 0,
-	                                 NULL,
-	                                 NULL);
-    if (size == 0) {
-      // This should never happen.
-      fprintf(stderr, "Could not convert arguments to utf8.");
-    }
-    char * buf_ptr = new char [size];
-    DWORD result = WideCharToMultiByte(CP_ACP,
-                                       0,
-	                                   s.c_str(),
-                                       -1,
-                                       buf_ptr,
-                                       size,
-                                       NULL,
-                                       NULL);
-    if (result == 0) {
-      // This should never happen.
-      fprintf(stderr, "Could not convert arguments to utf8.");
-    }
-    std::string r(buf_ptr);
-	delete buf_ptr;
-    return r;
-}
-
-std::wstring utf8ToWide( std::string const& s )
-{
-    int ws_len, r;
-	WCHAR* ws;
-    ws_len = MultiByteToWideChar(CP_UTF8,
-                               0,
-                               s.c_str(),
-                               -1,
-                               NULL,
-                               0);
-    ws = new wchar_t [ws_len * sizeof(WCHAR)];
-	if (ws == NULL) {
-      // This should never happen.
-      fprintf(stderr, "Could not convert arguments from utf8.");
-      exit(1);
-	}
-    r = MultiByteToWideChar(CP_UTF8,
-                          0,
-                          s.c_str(),
-                          -1,
-                          ws,
-                          ws_len);
-	if (r != ws_len) {
-      // This should never happen.
-      fprintf(stderr, "Could not do anything useful.");
-      exit(1);
-	}
-    std::wstring rt(ws);
-	delete ws;
-    return rt;
-}
-
-#endif
+using namespace v8;
 
 Persistent<FunctionTemplate> ZipFile::constructor;
 
 void ZipFile::Initialize(Handle<Object> target) {
-    HandleScope scope;
-    constructor = Persistent<FunctionTemplate>::New(FunctionTemplate::New(ZipFile::New));
-    constructor->InstanceTemplate()->SetInternalFieldCount(1);
-    constructor->SetClassName(String::NewSymbol("ZipFile"));
+    NanScope();
+    Local<FunctionTemplate> lcons = NanNew<FunctionTemplate>(ZipFile::New);
+    lcons->InstanceTemplate()->SetInternalFieldCount(1);
+    lcons->SetClassName(NanNew("Zipfile"));
 
     // functions
-    NODE_SET_PROTOTYPE_METHOD(constructor, "readFileSync", readFileSync);
-    NODE_SET_PROTOTYPE_METHOD(constructor, "readFile", readFile);
+    NODE_SET_PROTOTYPE_METHOD(lcons, "readFileSync", readFileSync);
+    NODE_SET_PROTOTYPE_METHOD(lcons, "readFile", readFile);
 
     // properties
-    constructor->InstanceTemplate()->SetAccessor(String::NewSymbol("count"), get_prop);
-    constructor->InstanceTemplate()->SetAccessor(String::NewSymbol("names"), get_prop);
+    lcons->InstanceTemplate()->SetAccessor(NanNew("count"), get_prop);
+    lcons->InstanceTemplate()->SetAccessor(NanNew("names"), get_prop);
 
-    target->Set(String::NewSymbol("ZipFile"), constructor->GetFunction());
+    target->Set(NanNew("ZipFile"),lcons->GetFunction());
+    NanAssignPersistent(constructor, lcons);
 }
 
 ZipFile::ZipFile(std::string const& file_name)
@@ -107,15 +47,21 @@ ZipFile::ZipFile(std::string const& file_name)
       file_name_(file_name),
       names_() {}
 
-Handle<Value> ZipFile::New(const Arguments& args) {
-    HandleScope scope;
+NAN_METHOD(ZipFile::New)
+{
+    NanScope();
 
     if (!args.IsConstructCall())
-        return ThrowException(String::New("Cannot call constructor as function, you need to use 'new' keyword"));
+    {
+        NanThrowError("Cannot call constructor as function, you need to use 'new' keyword");
+        NanReturnUndefined();
+    }
 
     if (args.Length() != 1 || !args[0]->IsString())
-        return ThrowException(Exception::TypeError(
-                                  String::New("first argument must be a path to a zipfile")));
+    {
+        NanThrowError("first argument must be a path to a zipfile");
+        NanReturnUndefined();
+    }
 
     std::string input_file = TOSTR(args[0]);
 #ifdef _WINDOWS
@@ -129,8 +75,8 @@ Handle<Value> ZipFile::New(const Arguments& args) {
         std::stringstream s;
         s << "cannot open file: " << input_file << " error: " << errstr << "\n";
         if (za) zip_close(za);
-        return ThrowException(Exception::Error(
-                                  String::New(s.str().c_str())));
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
     }
 
     ZipFile* zf = new ZipFile(input_file);
@@ -146,43 +92,40 @@ Handle<Value> ZipFile::New(const Arguments& args) {
     }
     if (za) zip_close(za);
     zf->Wrap(args.This());
-    return args.This();
+    NanReturnValue(args.This());
 }
 
-Handle<Value> ZipFile::get_prop(Local<String> property,
-                                const AccessorInfo& info) {
-    HandleScope scope;
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(info.This());
+NAN_GETTER(ZipFile::get_prop)
+{
+    NanScope();
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.Holder());
     std::string a = TOSTR(property);
     if (a == "count") {
-        return scope.Close(Integer::New(zf->names_.size()));
-    }
-    if (a == "names") {
+        NanReturnValue(NanNew<Integer>(zf->names_.size()));
+    } else if (a == "names") {
         unsigned num = zf->names_.size();
-        Local<Array> a = Array::New(num);
+        Local<Array> a = NanNew<Array>(num);
         for (unsigned i = 0; i < num; ++i) {
-            a->Set(i, String::New(zf->names_[i].c_str()));
+            a->Set(i, NanNew(zf->names_[i].c_str()));
         }
-
-        return scope.Close(a);
+        NanReturnValue(a);
     }
-    return Undefined();
+    NanReturnUndefined();
 }
 
-Handle<Value> ZipFile::readFileSync(const Arguments& args) {
-    HandleScope scope;
+NAN_METHOD(ZipFile::readFileSync)
+{
+    NanScope();
 
     if (args.Length() != 1 || !args[0]->IsString())
-        return ThrowException(Exception::TypeError(
-                                  String::New("first argument must be a file name inside the zip")));
+    {
+        NanThrowError("first argument must be a file name inside the zip");
+        NanReturnUndefined();
+    }
 
     std::string name = TOSTR(args[0]);
-
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
-
-
     int idx = -1;
-
     std::vector<std::string>::iterator it = std::find(zf->names_.begin(), zf->names_.end(), name);
     if (it != zf->names_.end()) {
         idx = distance(zf->names_.begin(), it);
@@ -191,7 +134,8 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
     if (idx == -1) {
         std::stringstream s;
         s << "No file found by the name of: '" << name << "\n";
-        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
     }
 
     int err;
@@ -202,8 +146,8 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
         if (za) zip_close(za);
-        return ThrowException(Exception::Error(
-            String::New(s.str().c_str())));
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
     }
 
     struct zip_file *zf_ptr = NULL;
@@ -213,7 +157,8 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
         if (za) zip_close(za);
         std::stringstream s;
         s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(za) << "\n";
-        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
     }
 
     struct zip_stat st;
@@ -231,13 +176,13 @@ Handle<Value> ZipFile::readFileSync(const Arguments& args) {
         s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
         if (zf_ptr) zip_fclose(zf_ptr);
         if (za) zip_close(za);
-        return ThrowException(Exception::Error(String::New(s.str().c_str())));
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
     }
-
-    node::Buffer *retbuf = Buffer::New(reinterpret_cast<char *>(&data[0]), data.size());
+    Local<Object> retbuf = NanNewBufferHandle(reinterpret_cast<char *>(&data[0]), data.size());
     if (zf_ptr) zip_fclose(zf_ptr);
     if (za) zip_close(za);
-    return scope.Close(retbuf->handle_);
+    NanReturnValue(retbuf);
 }
 
 typedef struct {
@@ -252,27 +197,31 @@ typedef struct {
 } closure_t;
 
 
-Handle<Value> ZipFile::readFile(const Arguments& args) {
-    HandleScope scope;
-
+NAN_METHOD(ZipFile::readFile)
+{
+    NanScope();
     if (args.Length() < 2)
-        return ThrowException(Exception::TypeError(
-                                  String::New("requires two arguments, the name of a file and a callback")));
+    {
+        NanThrowError("requires two arguments, the name of a file and a callback");
+        NanReturnUndefined();
+    }
 
     // first arg must be name
     if (!args[0]->IsString())
-        return ThrowException(Exception::TypeError(
-                                  String::New("first argument must be a file name inside the zip")));
+    {
+        NanThrowError("first argument must be a file name inside the zip");
+        NanReturnUndefined();
+    }
 
-    // last arg must be function callback
-    if (!args[args.Length()-1]->IsFunction())
-        return ThrowException(Exception::TypeError(
-                                  String::New("last argument must be a callback function")));
+    // ensure function callback
+    Local<Value> callback = args[args.Length() - 1];
+    if (!callback->IsFunction()) {
+        NanThrowTypeError("last argument must be a callback function");
+        NanReturnUndefined();
+    }
 
     std::string name = TOSTR(args[0]);
-
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
-
     closure_t *closure = new closure_t();
     closure->request.data = closure;
     closure->za = NULL;
@@ -285,29 +234,26 @@ Handle<Value> ZipFile::readFile(const Arguments& args) {
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
         if (closure->za) zip_close(closure->za);
-        closure->cb.Dispose();
+        NanDisposePersistent(closure->cb);
         delete closure;
-        return ThrowException(Exception::Error(
-                                  String::New(s.str().c_str())));
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
     }
 
     closure->zf = zf;
     closure->error = false;
     closure->name = name;
-    closure->cb = Persistent<Function>::New(Handle<Function>::Cast(args[args.Length()-1]));
+    NanAssignPersistent(closure->cb, callback.As<Function>());
     uv_queue_work(uv_default_loop(), &closure->request, Work_ReadFile, (uv_after_work_cb)Work_AfterReadFile);
     zf->Ref();
-    return Undefined();
+    NanReturnUndefined();
 }
 
 
 void ZipFile::Work_ReadFile(uv_work_t* req) {
     closure_t *closure = static_cast<closure_t *>(req->data);
-
     struct zip_file *zf_ptr = NULL;
-
     int idx = -1;
-
     std::vector<std::string>::iterator it = std::find(closure->zf->names_.begin(),
                                                       closure->zf->names_.end(),
                                                       closure->name);
@@ -349,27 +295,22 @@ void ZipFile::Work_ReadFile(uv_work_t* req) {
 }
 
 void ZipFile::Work_AfterReadFile(uv_work_t* req) {
-    HandleScope scope;
+    NanScope();
 
     closure_t *closure = static_cast<closure_t *>(req->data);
 
-    TryCatch try_catch;
-
     if (closure->error) {
-        Local<Value> argv[1] = { Exception::Error(String::New(closure->error_name.c_str())) };
-        closure->cb->Call(Context::GetCurrent()->Global(), 1, argv);
+        Local<Value> argv[1] = { NanError(closure->error_name.c_str()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 1, argv);
     } else {
-        node::Buffer *retbuf = Buffer::New(reinterpret_cast<char *>(&closure->data[0]), closure->data.size());
-        Local<Value> argv[2] = { Local<Value>::New(Null()), Local<Value>::New(retbuf->handle_) };
-        closure->cb->Call(Context::GetCurrent()->Global(), 2, argv);
+        Local<Object> retbuf = NanNewBufferHandle(reinterpret_cast<char *>(&closure->data[0]), closure->data.size());
+        Local<Value> argv[2] = { NanNull(), retbuf };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 2, argv);
     }
 
-    if (try_catch.HasCaught()) {
-        FatalException(try_catch);
-    }
     if (closure->za) zip_close(closure->za);
     closure->zf->Unref();
-    closure->cb.Dispose();
+    NanDisposePersistent(closure->cb);
     delete closure;
 }
 
@@ -378,13 +319,13 @@ extern "C" {
         ZipFile::Initialize(target);
 
         // node-zipfile version
-        target->Set(String::NewSymbol("version"), String::New("0.3.1"));
+        target->Set(NanNew("version"), NanNew("0.3.1"));
 
         // versions of deps
-        Local<Object> versions = Object::New();
-        versions->Set(String::NewSymbol("node"), String::New(NODE_VERSION+1));
-        versions->Set(String::NewSymbol("v8"), String::New(V8::GetVersion()));
-        target->Set(String::NewSymbol("versions"), versions);
+        Local<Object> versions = NanNew<Object>();
+        versions->Set(NanNew("node"), NanNew(NODE_VERSION+1));
+        versions->Set(NanNew("v8"), NanNew(V8::GetVersion()));
+        target->Set(NanNew("versions"), versions);
     }
     #define MAKE_MODULE(_modname) NODE_MODULE( _modname, init)
     MAKE_MODULE(MODULE_NAME)
