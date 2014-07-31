@@ -1,8 +1,8 @@
 environment:
   node_pre_gyp_accessKeyId:
-    secure: T1Pel/pv9SVfiVvZW8TLZnvZX6M4HQTiR7LUZnF1tuY=
+    secure: 7DrSVc5eIGtmMcki5H+iRft+Tk3MJTwDBQEUuJHWaQ4=
   node_pre_gyp_secretAccessKey:
-    secure: 8f5eTxMHpuVGHon2wbqrZuq3wzQfEuXMCcOyafBLza0T2VIOoBjbjDbgRbyRIzsT
+    secure: 1amwJJw9fu0j6dXnc5KsAQbSYf7Cjw/dapT6OZWABa6nc52grkKeLQ+DGaOfQz8i
   matrix:
     - nodejs_version: 0.10.29
     - nodejs_version: 0.8.26
@@ -16,13 +16,12 @@ install:
   - ps: Update-NodeJsInstallation $env:nodejs_version $env:Platform
   - node --version
   - npm --version
-  - SET PATH=c:\python27;%PATH%
-  - SET PATH=C:\Program Files (x86)\MSBuild\12.0\bin\;%PATH%
+  - SET PATH=C:\python27;C:\Program Files (x86)\MSBuild\12.0\bin\;%PATH%
   # add local node-pre-gyp dir to path
   - SET PATH=node_modules\.bin;%PATH%
   # otherwise node-gyp that comes with node v0.8.x is used and doesn't yet know about --msvs_version=2013
   - npm install node-gyp
-  - npm install --build-from-source  --msvs_version=2013
+  - npm install --build-from-source --msvs_version=2013
   - npm test
   - node-pre-gyp package
   # make commit message env var shorter
