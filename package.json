@@ -13,14 +13,14 @@
   "contributors"  : [],
   "licenses"      : ["BSD"],
   "dependencies"  : {
-    "nan": "~1.2.0",
-    "node-pre-gyp": "0.5.x"
+    "nan": "~1.4.1",
+    "node-pre-gyp": "~0.6.1"
   },
   "bundledDependencies":["node-pre-gyp"],
   "devDependencies": {
     "mocha": "1.x",
     "mkdirp": "~0.5.0",
-    "aws-sdk" : "~2.0.10"
+    "aws-sdk": "~2.0.25"
   },
   "bin"           : { 
     "unzip.js"    : "./bin/unzip.js"
@@ -35,9 +35,9 @@
   },
   "binary": {
     "module_name" : "zipfile",
-    "module_path" : "./lib/binding/",
+    "module_path" : "./lib/binding/{node_abi}-{platform}-{arch}",
     "host"        : "https://mapbox-node-binary.s3.amazonaws.com",
-    "remote_path" : "./{module_name}/v{version}",
+    "remote_path" : "./{name}/v{version}/{toolset}/",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
   }
 }
