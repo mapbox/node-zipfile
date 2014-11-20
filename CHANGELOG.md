@@ -1,5 +1,9 @@
 # changelog
 
+## v0.5.4
+
+ - Now supporting node v.11.14 and Visual Studio 2014 (--toolset=v140)
+
 ## v0.5.3
 
  - Now supporting node v.11.x
