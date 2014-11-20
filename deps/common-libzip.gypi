@@ -1,6 +1,6 @@
 {
   'variables': {
-      'libzip_version%':'0.11.1'
+      'libzip_version%':'0.11.1',
       "toolset%":'',
   },
   'target_defaults': {
