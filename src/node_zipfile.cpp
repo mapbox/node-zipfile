@@ -178,12 +178,14 @@ NAN_METHOD(ZipFile::copyFileSync)
     struct zip_stat st;
     zip_stat_index(za, idx, 0, &st);
   
-    char buf[8192];
+    char buf[1000000*5]; // read 5 MB chunks
     std::size_t buf_len = sizeof(buf);
     zip_int64_t result = 0;
     while ((result=zip_fread(zf_ptr, buf, buf_len)) > 0) {
         file_out.write(reinterpret_cast<char *>(&buf),result);
     }
+
+    file_out.close();
 
     if (result < 0) {
         std::stringstream s;

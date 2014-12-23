@@ -4,12 +4,9 @@ zipfile.node:
 	PATH=`npm explore npm -g -- pwd`/bin/node-gyp-bin:./node_modules/.bin:$${PATH} && ./node_modules/.bin/node-pre-gyp build
 
 clean:
-	@rm -rf ./build
 	rm -rf lib/binding/
-	rm -f test/tmp/*
-	rm -rf ./deps/libzip-0.10/
+	rm -rf test/tmp/*
 	rm -rf ./build
-	rm -rf ./out
 
 rebuild:
 	@make clean
