@@ -6,6 +6,15 @@ var constants = require('constants');
 var mkdirp = require('mkdirp');
 var existsSync = require('fs').existsSync || require('path').existsSync;
 
+describe('Writes', function(){
+
+var sizes = {
+    'world_merc.dbf':24641,
+    'world_merc.prj':384,
+    'world_merc.shp':428328,
+    'world_merc.shx':2060,
+};
+
 describe('Async Writes', function(){
 
     var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
@@ -17,6 +26,7 @@ describe('Async Writes', function(){
                 if (path.extname(name)) {
                     zf.readFile(name, function(err, buffer) {
                         if (err) throw err;
+                        assert.equal(sizes[name],buffer.length)
                         fs.open(dest, 'w', 0644, function(err, fd) {
                             if (err) throw err;
                             fs.write(fd, buffer, 0, buffer.length, null, function(err,written) {
@@ -34,26 +44,24 @@ describe('Async Writes', function(){
             });
         });
     });
-
 });
+
 
 describe('Sync Writes', function(){
     var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
     zf.names.forEach(function(name) {
-        var uncompressed = path.join('/tmp/sync', name);
-        var dirname = path.dirname(uncompressed);
-        mkdirp(dirname, 0755 , function(err) {
-            it('sync write '+ name, function(done){
-                if (err && !err.message.match(/^EEXIST/)) throw err;
-                if (path.extname(name)) {
-                    var buffer = zf.readFileSync(name);
-                    var fd = fs.openSync(uncompressed, 'w');
-                    fs.writeSync(fd, buffer, 0, buffer.length, null);
-                    fs.closeSync(fd);
-                    assert.ok(existsSync(uncompressed));
-                    done();
-                }
-            });
+        var dest = path.join(__dirname,'tmp', 'sync',name);
+        mkdirp.sync(path.dirname(dest), 0755);
+        it('sync write '+ name, function(done){
+            if (path.extname(name)) {
+                var buffer = zf.readFileSync(name);
+                assert.equal(sizes[name],buffer.length)
+                fs.writeFileSync(dest,buffer);
+                assert.ok(existsSync(dest));
+                done();
+            }
         });
     });
+});
+
 });
