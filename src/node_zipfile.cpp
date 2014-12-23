@@ -17,6 +17,7 @@ extern "C" {
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 #define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
 
@@ -33,6 +34,8 @@ void ZipFile::Initialize(Handle<Object> target) {
     // functions
     NODE_SET_PROTOTYPE_METHOD(lcons, "readFileSync", readFileSync);
     NODE_SET_PROTOTYPE_METHOD(lcons, "readFile", readFile);
+    NODE_SET_PROTOTYPE_METHOD(lcons, "copyFileSync", copyFileSync);
+    NODE_SET_PROTOTYPE_METHOD(lcons, "copyFile", copyFile);
 
     // properties
     lcons->InstanceTemplate()->SetAccessor(NanNew("count"), get_prop);
@@ -110,6 +113,95 @@ NAN_GETTER(ZipFile::get_prop)
         }
         NanReturnValue(a);
     }
+    NanReturnUndefined();
+}
+
+NAN_METHOD(ZipFile::copyFileSync)
+{
+    NanScope();
+
+    if (args.Length() < 2 || !args[0]->IsString() || !args[1]->IsString())
+    {
+        NanThrowError("requires two args: first argument must be a filename inside the zip and second must be a filename to write to.");
+        NanReturnUndefined();
+    }
+
+    std::string name = TOSTR(args[0]);
+    std::string to_name = TOSTR(args[1]);
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+    int idx = -1;
+    std::vector<std::string>::iterator it = std::find(zf->names_.begin(), zf->names_.end(), name);
+    if (it != zf->names_.end()) {
+        idx = distance(zf->names_.begin(), it);
+    }
+
+    if (idx == -1) {
+        std::stringstream s;
+        s << "No file found by the name of: '" << name << "\n";
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
+    }
+
+    int err;
+    char errstr[1024];
+    struct zip *za = NULL;
+    if ((za=zip_open(zf->file_name_.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
+        zip_error_to_str(errstr, sizeof(errstr), err, errno);
+        std::stringstream s;
+        s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
+        if (za) zip_close(za);
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
+    }
+
+    std::ofstream file_out(to_name.c_str(), std::ios::out| std::ios::trunc|std::ios::binary);
+    if (!file_out)
+    {
+        std::stringstream s;
+        s << "Could not open for writing: '" << to_name << "\n";
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
+    }
+
+
+    struct zip_file *zf_ptr = NULL;
+
+    if ((zf_ptr=zip_fopen_index(za, idx, 0)) == NULL) {
+        if (zf_ptr) zip_fclose(zf_ptr);
+        if (za) zip_close(za);
+        std::stringstream s;
+        s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(za) << "\n";
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
+    }
+
+    struct zip_stat st;
+    zip_stat_index(za, idx, 0, &st);
+  
+    char buf[8192];
+    std::size_t buf_len = sizeof(buf);
+    zip_int64_t result = 0;
+    while ((result=zip_fread(zf_ptr, buf, buf_len)) > 0) {
+        file_out.write(reinterpret_cast<char *>(&buf),result);
+    }
+
+    if (result < 0) {
+        std::stringstream s;
+        s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
+        if (zf_ptr) zip_fclose(zf_ptr);
+        if (za) zip_close(za);
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
+    }
+    if (zf_ptr) zip_fclose(zf_ptr);
+    if (za) zip_close(za);
+    NanReturnUndefined();
+}
+
+NAN_METHOD(ZipFile::copyFile)
+{
+    NanScope();
+    NanThrowError("Async copyFile not yet implemented");
     NanReturnUndefined();
 }
 

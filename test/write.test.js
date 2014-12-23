@@ -21,7 +21,7 @@ describe('Async Writes', function(){
     zf.names.forEach(function(name) {
         it('async write '+ name, function(done){
             var dest = path.join(__dirname,'tmp', name);
-            mkdirp(path.dirname(dest), 0755 , function(err) {
+            mkdirp(path.dirname(dest), function(err) {
                 if (err) throw err;
                 if (path.extname(name)) {
                     zf.readFile(name, function(err, buffer) {
@@ -51,13 +51,18 @@ describe('Sync Writes', function(){
     var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
     zf.names.forEach(function(name) {
         var dest = path.join(__dirname,'tmp', 'sync',name);
-        mkdirp.sync(path.dirname(dest), 0755);
+        var dest2 = path.join(__dirname,'tmp', 'sync-copy',name);
+        mkdirp.sync(path.dirname(dest));
+        mkdirp.sync(path.dirname(dest2));
         it('sync write '+ name, function(done){
             if (path.extname(name)) {
                 var buffer = zf.readFileSync(name);
                 assert.equal(sizes[name],buffer.length)
                 fs.writeFileSync(dest,buffer);
                 assert.ok(existsSync(dest));
+                zf.copyFileSync(name,dest2);
+                assert.ok(existsSync(dest2));
+                assert.equal(sizes[name],fs.readFileSync(dest2).length)
                 done();
             }
         });
