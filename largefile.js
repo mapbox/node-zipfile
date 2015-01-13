@@ -2,7 +2,9 @@ var path = require('path');
 var fs = require('fs');
 var os = require('os');
 var zipfile = require('./lib');
-
+var assert = require('assert');
+var crypto = require('crypto');
+var shasum = crypto.createHash('md5');
 /*
 
 Setup:
@@ -12,6 +14,7 @@ wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
 */
 
 var filepath = './too-large.zip'
+var expected_md5 = 'e0da2edc680bf10dd11decdcec1e521a'
 
 if (!fs.existsSync(filepath)) {
     console.log('file not downloaded '+ filepath)
@@ -23,6 +26,20 @@ function unzip(err) {
     console.log('Unzipping...');
     var zf = new zipfile.ZipFile(filepath);
     zf.copyFileSync('US_OG_022014.dbf', 'out.dbf');
+    validate('out.dbf');
+}
+
+function validate(filename) {
+    var s = fs.ReadStream(filename);
+    s.on('data', function(d) {
+      shasum.update(d);
+    });
+
+    s.on('end', function() {
+      var d = shasum.digest('hex');
+      console.log(d + '  ' + filename);
+      assert.equal(d,expected_md5);
+    });
 }
 
 unzip()
