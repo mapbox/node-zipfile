@@ -25,14 +25,24 @@ before_install:
  - node --version
  - npm --version
  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+ - sudo apt-get install -y valgrind
 
 install:
  # test building from source
  - npm install aws-sdk
  - npm install --build-from-source --clang=1
- - npm test
  - node-pre-gyp package testpackage
  - npm test
+ - valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha  | grep definitely
+ # test unzipping large file
+ - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
+ - node bench/largefile.js too-large.zip
+ - time unzip -o too-large.zip
+ - time dd if=/dev/urandom of=random.txt bs=2000000000 count=1
+ - du -h *txt
+ - time zip random.zip random.txt
+ - time unzip -o random.zip
+ - node bench/largefile.js random.zip
 
 before_script:
  # test publishing and installing from remote if
@@ -51,12 +61,3 @@ script:
  - if [[ "$platform" == 'linux' ]]; then sudo apt-get -qq install libzip-dev; npm install --build-from-source --shared_libzip  --clang=1; fi
  - if [[ "$platform" == 'darwin' ]]; then brew install libzip; npm install --build-from-source --shared_libzip --shared_libzip_includes=`brew --prefix`/include --shared_libzip_libpath=`brew --prefix`/lib  --clang=1; fi
  - npm test
- # test unzipping large file
- - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
- - node bench/largefile.js too-large.zip
- - echo y | time unzip too-large.zip
- - time dd if=/dev/urandom of=random.txt bs=1000000000 count=1
- - du -h *txt
- - time zip random.zip random.txt
- - echo y | time unzip random.zip
- - node bench/largefile.js random.zip
