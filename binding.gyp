@@ -17,6 +17,11 @@
       'sources': [
         'src/node_zipfile.cpp'
       ],
+      'xcode_settings': {
+        'OTHER_LDFLAGS':[
+          '-Wl,-bind_at_load'
+        ]
+      },
       'conditions': [
         ['shared_libzip == "false"', {
             'dependencies': [
