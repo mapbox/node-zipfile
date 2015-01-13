@@ -126,6 +126,7 @@ NAN_METHOD(ZipFile::copyFileSync)
         NanReturnUndefined();
     }
 
+
     std::string name = TOSTR(args[0]);
     std::string to_name = TOSTR(args[1]);
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
@@ -154,6 +155,8 @@ NAN_METHOD(ZipFile::copyFileSync)
         NanReturnUndefined();
     }
 
+/*
+
     std::ofstream file_out(to_name.c_str(), std::ios::out| std::ios::trunc|std::ios::binary);
     if (!file_out)
     {
@@ -162,7 +165,15 @@ NAN_METHOD(ZipFile::copyFileSync)
         NanThrowError(s.str().c_str());
         NanReturnUndefined();
     }
+*/
 
+    FILE * fo = fopen(to_name.c_str(), "wb");
+    if (!fo) {
+        std::stringstream s;
+        s << "Could not open for writing with C IO: '" << to_name << "\n";
+        NanThrowError(s.str().c_str());
+        NanReturnUndefined();
+    }
 
     struct zip_file *zf_ptr = NULL;
 
@@ -177,15 +188,25 @@ NAN_METHOD(ZipFile::copyFileSync)
 
     struct zip_stat st;
     zip_stat_index(za, idx, 0, &st);
-  
-    char buf[1000000*10]; // read 10 MB chunks
+    
+/*
+    char buf[1000000*1]; // read 10 MB chunks
     std::size_t buf_len = sizeof(buf);
     zip_int64_t result = 0;
     while ((result=zip_fread(zf_ptr, buf, buf_len)) > 0) {
-        file_out.write(reinterpret_cast<char *>(&buf),result);
+        file_out.write(buf,result);
+    }
+*/
+
+    std::size_t buf_len = 1000000*1;
+    std::unique_ptr<char[]> buf(new char[buf_len]); // read 10 MB chunks
+    zip_int64_t result = 0;
+
+    while ((result=zip_fread(zf_ptr, buf.get(), buf_len)) > 0) {
+        fwrite(buf.get(),1,result,fo);
     }
 
-    file_out.close();
+    fclose(fo);
 
     if (result < 0) {
         std::stringstream s;
