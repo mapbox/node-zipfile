@@ -53,5 +53,9 @@ script:
  - npm test
  # test unzipping large file
  - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
- - node bench/largefile.js
+ - node bench/largefile.js too-large.zip
  - time unzip too-large.zip
+ - time dd if=/dev/urandom of=random-4gb.txt bs=4000000000 count=1
+ - du -h *txt
+ - time zip -9 random.zip random-4gb.txt
+ - node bench/largefile.js random.zip
