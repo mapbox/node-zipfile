@@ -199,12 +199,14 @@ NAN_METHOD(ZipFile::copyFileSync)
 */
 
     std::size_t buf_len = 1000000*1;
-    std::unique_ptr<char[]> buf(new char[buf_len]); // read 10 MB chunks
+    char * buf = new char[1000000*1];
     zip_int64_t result = 0;
 
-    while ((result=zip_fread(zf_ptr, buf.get(), buf_len)) > 0) {
-        fwrite(buf.get(),1,result,fo);
+    while ((result=zip_fread(zf_ptr, buf, buf_len)) > 0) {
+        fwrite(buf,1,result,fo);
     }
+
+    delete [] buf;
 
     fclose(fo);
 
