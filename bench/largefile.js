@@ -25,8 +25,6 @@ if (process.argv.length < 3) {
 
 var filepath = process.argv[2];
 
-var expected_md5 = 'e0da2edc680bf10dd11decdcec1e521a';
-
 if (!fs.existsSync(filepath)) {
     console.log('file not downloaded '+ filepath);
     process.exit(1);
@@ -42,11 +40,13 @@ function unzip(err) {
     zf.names.forEach(function(name) {
         zf.copyFileSync(name,name);
     })
-    console.timeEnd('copying')
-    validate('out.dbf');
+    console.timeEnd('copying');
+    if (zf.names.indexOf('US_OG_022014.dbf') > -1) {
+      validate('US_OG_022014.dbf','e0da2edc680bf10dd11decdcec1e521a');
+    }
 }
 
-function validate(filename) {
+function validate(filename,expected_md5) {
     var s = fs.ReadStream(filename);
     console.time('validating')
     s.on('data', function(d) {
