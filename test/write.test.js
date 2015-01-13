@@ -5,14 +5,15 @@ var fs = require('fs');
 var constants = require('constants');
 var mkdirp = require('mkdirp');
 var existsSync = require('fs').existsSync || require('path').existsSync;
+var crypto = require('crypto');
 
 describe('Writes', function(){
 
-var sizes = {
-    'world_merc.dbf':24641,
-    'world_merc.prj':384,
-    'world_merc.shp':428328,
-    'world_merc.shx':2060,
+var meta = {
+    'world_merc.dbf': {size: 24641, md5: '7d087de3e8c9ed2aee0e81615ff91e13'},
+    'world_merc.prj': {size: 384, md5: '1fac28f31277bfbbf8a1b0050cc8fb85'},
+    'world_merc.shp': {size: 428328, md5: '9042bca3485687bef43a18ef8edc6469'},
+    'world_merc.shx': {size: 2060, md5: 'b51caf61d1b821025bb8994151cfc0cc'},
 };
 
 describe('Async Writes', function(){
@@ -26,7 +27,11 @@ describe('Async Writes', function(){
                 if (path.extname(name)) {
                     zf.readFile(name, function(err, buffer) {
                         if (err) throw err;
-                        assert.equal(sizes[name],buffer.length)
+                        assert.equal(meta[name].size,buffer.length);
+                        var shasum = crypto.createHash('md5');
+                        shasum.update(buffer);
+                        var md5 = shasum.digest('hex');
+                        assert.equal(meta[name].md5,md5);
                         fs.open(dest, 'w', 0644, function(err, fd) {
                             if (err) throw err;
                             fs.write(fd, buffer, 0, buffer.length, null, function(err,written) {
@@ -57,12 +62,16 @@ describe('Sync Writes', function(){
         it('sync write '+ name, function(done){
             if (path.extname(name)) {
                 var buffer = zf.readFileSync(name);
-                assert.equal(sizes[name],buffer.length)
+                assert.equal(meta[name].size,buffer.length)
+                var shasum = crypto.createHash('md5');
+                shasum.update(buffer);
+                var md5 = shasum.digest('hex');
+                assert.equal(meta[name].md5,md5);
                 fs.writeFileSync(dest,buffer);
                 assert.ok(existsSync(dest));
                 zf.copyFileSync(name,dest2);
                 assert.ok(existsSync(dest2));
-                assert.equal(sizes[name],fs.readFileSync(dest2).length)
+                assert.equal(meta[name].size,fs.readFileSync(dest2).length)
                 done();
             }
         });
