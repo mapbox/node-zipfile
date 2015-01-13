@@ -53,5 +53,5 @@ script:
  - npm test
  # test unzipping large file
  - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
- - time node bench/largefile.js
+ - node bench/largefile.js
  - time unzip too-large.zip
