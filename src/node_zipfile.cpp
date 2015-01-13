@@ -18,6 +18,7 @@ extern "C" {
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <stdexcept>
 
 #define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
 
@@ -116,63 +117,38 @@ NAN_GETTER(ZipFile::get_prop)
     NanReturnUndefined();
 }
 
-NAN_METHOD(ZipFile::copyFileSync)
+void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
 {
-    NanScope();
-
-    if (args.Length() < 2 || !args[0]->IsString() || !args[1]->IsString())
-    {
-        NanThrowError("requires two args: first argument must be a filename inside the zip and second must be a filename to write to.");
-        NanReturnUndefined();
-    }
-
-
-    std::string name = TOSTR(args[0]);
-    std::string to_name = TOSTR(args[1]);
-    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
     int idx = -1;
-    std::vector<std::string>::iterator it = std::find(zf->names_.begin(), zf->names_.end(), name);
-    if (it != zf->names_.end()) {
-        idx = distance(zf->names_.begin(), it);
+    std::vector<std::string> const& names = zf->names();
+    std::vector<std::string>::const_iterator it = std::find(names.begin(), names.end(), from);
+    if (it != names.end()) {
+        idx = distance(names.begin(), it);
     }
 
     if (idx == -1) {
         std::stringstream s;
-        s << "No file found by the name of: '" << name << "\n";
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        s << "No file found by the name of: '" << from << "\n";
+        throw std::runtime_error(s.str().c_str());
     }
 
     int err;
     char errstr[1024];
     struct zip *za = NULL;
-    if ((za=zip_open(zf->file_name_.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
+    std::string const& zip_filename = zf->file_name();
+    if ((za=zip_open(zip_filename.c_str(), ZIP_CHECKCONS, &err)) == NULL) {
         zip_error_to_str(errstr, sizeof(errstr), err, errno);
         std::stringstream s;
-        s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
+        s << "cannot open file: " << zip_filename << " error: " << errstr << "\n";
         if (za) zip_close(za);
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        throw std::runtime_error(s.str().c_str());
     }
 
-/*
-
-    std::ofstream file_out(to_name.c_str(), std::ios::out| std::ios::trunc|std::ios::binary);
-    if (!file_out)
-    {
-        std::stringstream s;
-        s << "Could not open for writing: '" << to_name << "\n";
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
-    }
-*/
-
-    FILE * fo = fopen(to_name.c_str(), "wb");
+    FILE * fo = fopen(to.c_str(), "wb");
     if (!fo) {
         std::stringstream s;
-        s << "Could not open for writing with C IO: '" << to_name << "\n";
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        s << "Could not open for writing with C IO: '" << to << "\n";
+        throw std::runtime_error(s.str().c_str());
     }
 
     struct zip_file *zf_ptr = NULL;
@@ -181,22 +157,12 @@ NAN_METHOD(ZipFile::copyFileSync)
         if (zf_ptr) zip_fclose(zf_ptr);
         if (za) zip_close(za);
         std::stringstream s;
-        s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(za) << "\n";
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        s << "cannot open file #" << idx << " in " << from << ": archive error: " << zip_strerror(za) << "\n";
+        throw std::runtime_error(s.str().c_str());
     }
 
     struct zip_stat st;
     zip_stat_index(za, idx, 0, &st);
-    
-/*
-    char buf[1000000*1]; // read 10 MB chunks
-    std::size_t buf_len = sizeof(buf);
-    zip_int64_t result = 0;
-    while ((result=zip_fread(zf_ptr, buf, buf_len)) > 0) {
-        file_out.write(buf,result);
-    }
-*/
 
     std::size_t buf_len = 1000000*1;
     char * buf = new char[buf_len];
@@ -212,14 +178,34 @@ NAN_METHOD(ZipFile::copyFileSync)
 
     if (result < 0) {
         std::stringstream s;
-        s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
+        s << "error reading file #" << idx << " in " << from << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
         if (zf_ptr) zip_fclose(zf_ptr);
         if (za) zip_close(za);
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        throw std::runtime_error(s.str().c_str());
     }
     if (zf_ptr) zip_fclose(zf_ptr);
     if (za) zip_close(za);
+
+}
+
+NAN_METHOD(ZipFile::copyFileSync)
+{
+    NanScope();
+
+    if (args.Length() < 2 || !args[0]->IsString() || !args[1]->IsString())
+    {
+        NanThrowError("requires two args: first argument must be a filename inside the zip and second must be a filename to write to.");
+        NanReturnUndefined();
+    }
+
+    std::string from = TOSTR(args[0]);
+    std::string to = TOSTR(args[1]);
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+    try {
+        _copyFile(from,to,zf);    
+    } catch (std::exception const& ex) {
+        NanThrowError(ex.what());        
+    }
     NanReturnUndefined();
 }
 
@@ -243,9 +229,10 @@ NAN_METHOD(ZipFile::readFileSync)
     std::string name = TOSTR(args[0]);
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
     int idx = -1;
-    std::vector<std::string>::iterator it = std::find(zf->names_.begin(), zf->names_.end(), name);
-    if (it != zf->names_.end()) {
-        idx = distance(zf->names_.begin(), it);
+    std::vector<std::string> const& names = zf->names();
+    std::vector<std::string>::const_iterator it = std::find(names.begin(), names.end(), name);
+    if (it != names.end()) {
+        idx = distance(names.begin(), it);
     }
 
     if (idx == -1) {
@@ -371,11 +358,12 @@ void ZipFile::Work_ReadFile(uv_work_t* req) {
     closure_t *closure = static_cast<closure_t *>(req->data);
     struct zip_file *zf_ptr = NULL;
     int idx = -1;
-    std::vector<std::string>::iterator it = std::find(closure->zf->names_.begin(),
-                                                      closure->zf->names_.end(),
+    std::vector<std::string> const& names = closure->zf->names();
+    std::vector<std::string>::const_iterator it = std::find(names.begin(),
+                                                      names.end(),
                                                       closure->name);
-    if (it != closure->zf->names_.end()) {
-        idx = distance(closure->zf->names_.begin(), it);
+    if (it != names.end()) {
+        idx = distance(names.begin(), it);
     }
 
     if (idx == -1) {

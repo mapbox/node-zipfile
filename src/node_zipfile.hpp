@@ -26,6 +26,8 @@ class ZipFile: public node::ObjectWrap {
     static void Work_ReadFile(uv_work_t* req);
     static void Work_AfterReadFile(uv_work_t* req);
     ZipFile(std::string const& file_name);
+    std::vector<std::string> const& names() const { return names_; }
+    std::string const& file_name() const { return file_name_; }
  private:
     std::string file_name_;
     std::vector<std::string> names_;
