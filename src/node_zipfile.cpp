@@ -199,7 +199,7 @@ NAN_METHOD(ZipFile::copyFileSync)
 */
 
     std::size_t buf_len = 1000000*1;
-    char * buf = new char[1000000*1];
+    char * buf = new char[buf_len];
     zip_int64_t result = 0;
 
     while ((result=zip_fread(zf_ptr, buf, buf_len)) > 0) {
