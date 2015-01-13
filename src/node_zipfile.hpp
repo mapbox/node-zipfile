@@ -20,6 +20,8 @@ class ZipFile: public node::ObjectWrap {
     static NAN_METHOD(New);
     static NAN_GETTER(get_prop);
     static NAN_METHOD(copyFile);
+    static void Work_CopyFile(uv_work_t* req);
+    static void Work_AfterCopyFile(uv_work_t* req);
     static NAN_METHOD(copyFileSync);
     static NAN_METHOD(readFileSync);
     static NAN_METHOD(readFile);

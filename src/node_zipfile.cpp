@@ -147,7 +147,7 @@ void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
     FILE * fo = fopen(to.c_str(), "wb");
     if (!fo) {
         std::stringstream s;
-        s << "Could not open for writing with C IO: '" << to << "\n";
+        s << "Could not open for writing: '" << to << "\n";
         throw std::runtime_error(s.str().c_str());
     }
 
@@ -185,7 +185,6 @@ void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
     }
     if (zf_ptr) zip_fclose(zf_ptr);
     if (za) zip_close(za);
-
 }
 
 NAN_METHOD(ZipFile::copyFileSync)
@@ -209,11 +208,74 @@ NAN_METHOD(ZipFile::copyFileSync)
     NanReturnUndefined();
 }
 
+struct copy_file_baton {
+    uv_work_t request;
+    ZipFile* zf;
+    std::string from;
+    std::string to;
+    std::string error_name;
+    Persistent<Function> cb;
+};
+
 NAN_METHOD(ZipFile::copyFile)
 {
     NanScope();
-    NanThrowError("Async copyFile not yet implemented");
+    if (args.Length() < 3)
+    {
+        NanThrowError("requires three arguments: filename inside the zip, a filename to write to, and a callback");
+        NanReturnUndefined();
+    }
+
+    if (!args[0]->IsString() || !args[1]->IsString())
+    {
+        NanThrowError("first argument must be a filename inside the zip and second must be a filename to write to.");
+        NanReturnUndefined();
+    }
+
+    // ensure function callback
+    Local<Value> callback = args[args.Length() - 1];
+    if (!callback->IsFunction()) {
+        NanThrowTypeError("last argument must be a callback function");
+        NanReturnUndefined();
+    }
+    std::string from = TOSTR(args[0]);
+    std::string to = TOSTR(args[1]);
+    ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
+
+    copy_file_baton *closure = new copy_file_baton();
+    closure->request.data = closure;
+    closure->zf = zf;
+    closure->from = from;
+    closure->to = to;
+    NanAssignPersistent(closure->cb, callback.As<Function>());
+    uv_queue_work(uv_default_loop(), &closure->request, Work_CopyFile, (uv_after_work_cb)Work_AfterCopyFile);
+    zf->Ref();
     NanReturnUndefined();
+}
+
+
+void ZipFile::Work_CopyFile(uv_work_t* req) {
+    copy_file_baton * closure = static_cast<copy_file_baton *>(req->data);
+    try {
+        _copyFile(closure->from,closure->to,closure->zf);
+    } catch (std::exception const& ex) {
+        closure->error_name = ex.what();
+    }
+}
+
+void ZipFile::Work_AfterCopyFile(uv_work_t* req) {
+    NanScope();
+    copy_file_baton *closure = static_cast<copy_file_baton *>(req->data);
+    if (!closure->error_name.empty()) {
+        Local<Value> argv[1] = { NanError(closure->error_name.c_str()) };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 1, argv);
+    } else {
+        Local<Value> argv[1] = { NanNull() };
+        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 1, argv);
+    }
+    closure->zf->Unref();
+    NanDisposePersistent(closure->cb);
+    delete closure;
 }
 
 NAN_METHOD(ZipFile::readFileSync)

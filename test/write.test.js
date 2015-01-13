@@ -21,7 +21,10 @@ describe('Async Writes', function(){
     var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
     zf.names.forEach(function(name) {
         it('async write '+ name, function(done){
-            var dest = path.join(__dirname,'tmp', name);
+            var dest = path.join(__dirname, 'tmp', 'aync',name);
+            var dest2 = path.join(__dirname,'tmp', 'aync-copy',name);
+            mkdirp.sync(path.dirname(dest));
+            mkdirp.sync(path.dirname(dest2));
             mkdirp(path.dirname(dest), function(err) {
                 if (err) throw err;
                 if (path.extname(name)) {
@@ -32,17 +35,15 @@ describe('Async Writes', function(){
                         shasum.update(buffer);
                         var md5 = shasum.digest('hex');
                         assert.equal(meta[name].md5,md5);
-                        fs.open(dest, 'w', 0644, function(err, fd) {
+                        zf.copyFile(name,dest2,function(err) {
                             if (err) throw err;
-                            fs.write(fd, buffer, 0, buffer.length, null, function(err,written) {
-                                 if (err) throw err;
-                                 // written is number of bytes written
-                                 assert.ok(written > 0);
-                                 fs.close(fd, function(err) {
-                                     if (err) throw err;
-                                     done();
-                                 });
-                            });
+                            assert.ok(existsSync(dest2));
+                            assert.equal(meta[name].size,fs.readFileSync(dest2).length)
+                            var shasum2 = crypto.createHash('md5');
+                            shasum2.update(buffer);
+                            var md52 = shasum2.digest('hex');
+                            assert.equal(meta[name].md5,md52);
+                            done();
                         });
                     });
                 }
