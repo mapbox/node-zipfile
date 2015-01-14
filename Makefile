@@ -21,7 +21,7 @@ verbose: ./node_modules
 clean:
 	@rm -rf ./build
 	rm -rf lib/binding/
-	rm ./test/tmp/*
+	rm -rf ./test/tmp/*
 	echo > ./test/tmp/placeholder.txt
 	rm -rf ./node_modules/
 
