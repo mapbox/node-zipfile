@@ -1,5 +1,9 @@
 # changelog
 
+## v0.5.5
+
+ - Added copyFile method for efficient handling of large zip archive members.
+
 ## v0.5.4
 
  - Now supporting node v.11.14 and Visual Studio 2014 (--toolset=v140)
