@@ -11,12 +11,10 @@ Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile arch
 ```js
 var zipfile = require('zipfile');
 var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
-zf
-{ names: [ 'world_merc.dbf', 'world_merc.prj', 'world_merc.shp', 'world_merc.shx' ],
-  count: 4 }
-var buffer = zf.readFileSync('world_merc.prj');
-buffer.toString()
-'PROJCS["Google Maps Global Mercator",GEOGCS .... '
+zf.readFile('world_merc.prj', function(err, buffer) {
+    if (err) throw err;
+    console.log(buffer.toString());
+});
 ```
 
 ### Large files
@@ -26,12 +24,12 @@ To handle large zipfiles and avoid the overhead of passing data from C++ to JS u
 ```js
 var zipfile = require('zipfile');
 var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
-zf
-{ names: [ 'world_merc.dbf', 'world_merc.prj', 'world_merc.shp', 'world_merc.shx' ],
-  count: 4 }
 var zip_entry_name = 'world_merc.shp';
 var output_file = 'out/world_merc.shp';
-zf.copyFileSync(zip_entry_name,output_file);
+zf.copyFile(zip_entry_name,output_file, function(err) {
+  if (err) throw err;
+  console.log('Successfully wrote ' + output_file);
+});
 ```
 
 ## Depends
