@@ -164,7 +164,7 @@ void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
     struct zip_stat st;
     zip_stat_index(za, idx, 0, &st);
 
-    std::size_t buf_len = 1000000*1;
+    std::size_t buf_len = 1000000; // 1 MB chunk
     char * buf = new char[buf_len];
     zip_int64_t result = 0;
 
