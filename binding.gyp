@@ -17,6 +17,13 @@
       'sources': [
         'src/node_zipfile.cpp'
       ],
+      'xcode_settings': {
+        'OTHER_LDFLAGS':[
+          '-Wl,-bind_at_load'
+        ],
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+      },
+      'cflags_cc!': ['-fno-exceptions'],
       'conditions': [
         ['shared_libzip == "false"', {
             'dependencies': [

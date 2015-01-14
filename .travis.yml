@@ -25,14 +25,24 @@ before_install:
  - node --version
  - npm --version
  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+ - sudo apt-get install -y valgrind
 
 install:
  # test building from source
  - npm install aws-sdk
  - npm install --build-from-source --clang=1
- - npm test
  - node-pre-gyp package testpackage
  - npm test
+ - valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha  | grep definitely
+ # test unzipping large file
+ - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
+ - node bench/largefile.js too-large.zip
+ - time unzip -o too-large.zip
+ - time dd if=/dev/urandom of=random.txt bs=1000000000 count=1
+ - du -h *txt
+ - time zip random.zip random.txt
+ - time unzip -o random.zip
+ - node bench/largefile.js random.zip
 
 before_script:
  # test publishing and installing from remote if

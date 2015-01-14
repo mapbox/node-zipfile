@@ -19,11 +19,17 @@ class ZipFile: public node::ObjectWrap {
     static void Initialize(v8::Handle<v8::Object> target);
     static NAN_METHOD(New);
     static NAN_GETTER(get_prop);
+    static NAN_METHOD(copyFile);
+    static void Work_CopyFile(uv_work_t* req);
+    static void Work_AfterCopyFile(uv_work_t* req);
+    static NAN_METHOD(copyFileSync);
     static NAN_METHOD(readFileSync);
     static NAN_METHOD(readFile);
     static void Work_ReadFile(uv_work_t* req);
     static void Work_AfterReadFile(uv_work_t* req);
     ZipFile(std::string const& file_name);
+    std::vector<std::string> const& names() const { return names_; }
+    std::string const& file_name() const { return file_name_; }
  private:
     std::string file_name_;
     std::vector<std::string> names_;
