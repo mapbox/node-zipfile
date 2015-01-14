@@ -5,6 +5,7 @@ var zipfile = require('../lib');
 var assert = require('assert');
 var crypto = require('crypto');
 var shasum = crypto.createHash('md5');
+var queue = require('queue-async');
 
 /*
 
@@ -30,20 +31,31 @@ if (!fs.existsSync(filepath)) {
     process.exit(1);
 }
 
+function copy(zf,name,cb) {
+    zf.copyFile(name,name,function(err) {
+        cb(err,name);
+    });
+}
+
 function unzip(err) {
     if (err) throw err;
     console.log('Unzipping...');
-    console.time('opening')
+    console.time('opening');
     var zf = new zipfile.ZipFile(filepath);
-    console.timeEnd('opening')
-    console.time('copying')
+    console.timeEnd('opening');
+    console.time('copying');
+    var q = queue(10);
     zf.names.forEach(function(name) {
-        zf.copyFileSync(name,name);
+        q.defer(copy,zf,name);
     })
-    console.timeEnd('copying');
-    if (zf.names.indexOf('US_OG_022014.dbf') > -1) {
-      validate('US_OG_022014.dbf','e0da2edc680bf10dd11decdcec1e521a');
-    }
+    q.awaitAll(function(err, results) {
+        console.timeEnd('copying');
+        if (err) throw err;
+        assert.equal(results.length,zf.names.length);
+        if (results.indexOf('US_OG_022014.dbf') > -1) {
+            validate('US_OG_022014.dbf','e0da2edc680bf10dd11decdcec1e521a');
+        }
+    });
 }
 
 function validate(filename,expected_md5) {

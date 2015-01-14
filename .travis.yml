@@ -38,7 +38,7 @@ install:
  - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
  - node bench/largefile.js too-large.zip
  - time unzip -o too-large.zip
- - time dd if=/dev/urandom of=random.txt bs=2000000000 count=1
+ - time dd if=/dev/urandom of=random.txt bs=1000000000 count=1
  - du -h *txt
  - time zip random.zip random.txt
  - time unzip -o random.zip
