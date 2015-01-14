@@ -105,7 +105,7 @@ NAN_GETTER(ZipFile::get_prop)
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.Holder());
     std::string a = TOSTR(property);
     if (a == "count") {
-        NanReturnValue(NanNew<Integer>(zf->names_.size()));
+        NanReturnValue(NanNew<Integer>(static_cast<uint32_t>(zf->names_.size())));
     } else if (a == "names") {
         unsigned num = zf->names_.size();
         Local<Array> a = NanNew<Array>(num);
