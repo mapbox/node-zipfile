@@ -1,5 +1,9 @@
 # changelog
 
+## v0.5.6
+
+ - Support for building against io.js v1.0.1
+
 ## v0.5.5
 
  - Added copyFile method for efficient handling of large zip archive members.
