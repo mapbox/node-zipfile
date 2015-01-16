@@ -1,5 +1,10 @@
 # changelog
 
+## v0.5.7
+
+ - Updated node-pre-gyp to v0.6.2
+ - Support for io.js v1.0.2
+
 ## v0.5.6
 
  - Support for building against io.js v1.0.1
