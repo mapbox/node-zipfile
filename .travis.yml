@@ -35,7 +35,7 @@ before_install:
  - node --version
  - npm --version
  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
- - - if [[ "$platform" == 'linux' ]]; then sudo apt-get install -y valgrind; fi;
+ - if [[ "$platform" == 'linux' ]]; then sudo apt-get install -y valgrind; fi;
 
 install:
  # test building from source
