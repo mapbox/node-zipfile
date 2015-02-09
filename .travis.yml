@@ -1,12 +1,22 @@
 language: cpp
 
+os:
+  - linux
+  - osx
+
 compiler:
  - clang
+ - gcc
+
+matrix:
+  exclude:
+     - os: osx
+       compiler: gcc
 
 env:
   matrix:
-   - NODE_NVM_VERSION="0.11.14"
-   - NODE_NVM_VERSION="0.10.33"
+   - NODE_NVM_VERSION="0.11.14" JOBS=8
+   - NODE_NVM_VERSION="0.10.33" JOBS=8
   global:
    - secure: hBUfRqVPovL7PVOJONI8sakIUtggpM74qMPdi5zaMpJhuV/QWfROOVc05ULEr1P0Fra2WpQ62mp8lfa1NbB6sQfT/8Y6u0lucf9SsIUBJzDrSmfXv2NDgpJn9RQmfsZgLfDuTwRLVROkNSTowUq3tnhDIzX/NyB7uOp1TZNEJ8A=
    - secure: xWyq1Ys9lpMUVCh73q5YDDfC4nLeeydqIS4S+lJ/t/jUCNHDwe1x5XrxRIALi74qNmHg6eTcOeEW5iot/sf1oUJIA1oPt9iMIMolg9iYWJKWN4E6gWcIigYu9ZDl3GJsHyiNs/dVlZjzY1YKzyvgZ2MRfy4l0rPShCxROoCiCIM=
@@ -25,7 +35,7 @@ before_install:
  - node --version
  - npm --version
  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
- - sudo apt-get install -y valgrind
+ - - if [[ "$platform" == 'linux' ]]; then sudo apt-get install -y valgrind; fi;
 
 install:
  # test building from source
@@ -33,7 +43,7 @@ install:
  - npm install --build-from-source --clang=1
  - node-pre-gyp package testpackage
  - npm test
- - valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha  | grep definitely
+ - - if [[ "$platform" == 'linux' ]]; then valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha | grep definitely; fi;
  # test unzipping large file
  - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
  - node bench/largefile.js too-large.zip
