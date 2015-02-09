@@ -43,7 +43,7 @@ install:
  - npm install --build-from-source --clang=1
  - node-pre-gyp package testpackage
  - npm test
- - - if [[ "$platform" == 'linux' ]]; then valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha | grep definitely; fi;
+ - if [[ "$platform" == 'linux' ]]; then valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha | grep definitely; fi;
  # test unzipping large file
  - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
  - node bench/largefile.js too-large.zip
