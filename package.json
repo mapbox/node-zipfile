@@ -13,8 +13,8 @@
   "contributors"  : [],
   "licenses"      : ["BSD"],
   "dependencies"  : {
-    "nan": "~1.5.1",
-    "node-pre-gyp": "~0.6.2"
+    "nan": "~1.6.2",
+    "node-pre-gyp": "~0.6.4"
   },
   "bundledDependencies":["node-pre-gyp"],
   "devDependencies": {
@@ -25,9 +25,6 @@
   },
   "bin"           : { 
     "unzip.js"    : "./bin/unzip.js"
-  },
-  "engines"       : {
-      "node": ">= 0.8.0 < 0.13"
   },
   "scripts"       : {
     "prepublish"  : "npm install node-pre-gyp",

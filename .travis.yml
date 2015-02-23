@@ -6,17 +6,12 @@ os:
 
 compiler:
  - clang
- - gcc
-
-matrix:
-  exclude:
-     - os: osx
-       compiler: gcc
 
 env:
   matrix:
-   - NODE_NVM_VERSION="0.11.14" JOBS=8
-   - NODE_NVM_VERSION="0.10.33" JOBS=8
+   - NODE_VERSION="0.10.36" JOBS=8
+   - NODE_VERSION="0.12.0" JOBS=8
+   - NODE_VERSION="iojs-v1.2.0" JOBS=8
   global:
    - secure: hBUfRqVPovL7PVOJONI8sakIUtggpM74qMPdi5zaMpJhuV/QWfROOVc05ULEr1P0Fra2WpQ62mp8lfa1NbB6sQfT/8Y6u0lucf9SsIUBJzDrSmfXv2NDgpJn9RQmfsZgLfDuTwRLVROkNSTowUq3tnhDIzX/NyB7uOp1TZNEJ8A=
    - secure: xWyq1Ys9lpMUVCh73q5YDDfC4nLeeydqIS4S+lJ/t/jUCNHDwe1x5XrxRIALi74qNmHg6eTcOeEW5iot/sf1oUJIA1oPt9iMIMolg9iYWJKWN4E6gWcIigYu9ZDl3GJsHyiNs/dVlZjzY1YKzyvgZ2MRfy4l0rPShCxROoCiCIM=
@@ -28,10 +23,10 @@ before_install:
  # here we set up the node version on the fly based on the matrix value.
  # This is done manually so that it is easy to flip the 'language' to
  # objective-c in another branch (to run the same travis.yml on OS X)
- - git clone https://github.com/creationix/nvm.git ../.nvm
- - source ../.nvm/nvm.sh
- - nvm install $NODE_NVM_VERSION
- - nvm use $NODE_NVM_VERSION
+ - rm -rf ~/.nvm && git clone --depth 1 https://github.com/creationix/nvm.git ~/.nvm
+ - source ~/.nvm/nvm.sh
+ - nvm install $NODE_VERSION
+ - nvm use $NODE_VERSION
  - node --version
  - npm --version
  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
@@ -39,7 +34,6 @@ before_install:
 
 install:
  # test building from source
- - npm install aws-sdk
  - npm install --build-from-source --clang=1
  - node-pre-gyp package testpackage
  - npm test
