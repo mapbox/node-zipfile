@@ -9,8 +9,9 @@
 #define ZCONF_H
 
 /* This include does prefixing as below, but with an updated set of names */
+#if !defined(_WIN32)
 #include "mozzconf.h"
-
+#endif
 /*
  * If you *really* need a unique prefix for all types and library functions,
  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
