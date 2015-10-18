@@ -15,16 +15,16 @@
 
 class ZipFile: public node::ObjectWrap {
  public:
-    static v8::Persistent<v8::FunctionTemplate> constructor;
+    static Nan::Persistent<v8::FunctionTemplate> constructor;
     static void Initialize(v8::Handle<v8::Object> target);
-    static NAN_METHOD(New);
-    static NAN_GETTER(get_prop);
-    static NAN_METHOD(copyFile);
+    static void New(const Nan::FunctionCallbackInfo<v8::Value>& args);
+    static void get_prop(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& args);
+    static void copyFile(const Nan::FunctionCallbackInfo<v8::Value>& args);
     static void Work_CopyFile(uv_work_t* req);
     static void Work_AfterCopyFile(uv_work_t* req);
-    static NAN_METHOD(copyFileSync);
-    static NAN_METHOD(readFileSync);
-    static NAN_METHOD(readFile);
+    static void copyFileSync(const Nan::FunctionCallbackInfo<v8::Value>& args);
+    static void readFileSync(const Nan::FunctionCallbackInfo<v8::Value>& args);
+    static void readFile(const Nan::FunctionCallbackInfo<v8::Value>& args);
     static void Work_ReadFile(uv_work_t* req);
     static void Work_AfterReadFile(uv_work_t* req);
     ZipFile(std::string const& file_name);
