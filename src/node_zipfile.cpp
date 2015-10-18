@@ -24,26 +24,38 @@ extern "C" {
 
 using namespace v8;
 
-Persistent<FunctionTemplate> ZipFile::constructor;
+Nan::Persistent<FunctionTemplate> ZipFile::constructor;
 
 void ZipFile::Initialize(Handle<Object> target) {
-    NanScope();
-    Local<FunctionTemplate> lcons = NanNew<FunctionTemplate>(ZipFile::New);
+    Nan::HandleScope scope;
+    Local<FunctionTemplate> lcons = Nan::New<FunctionTemplate>(ZipFile::New);
     lcons->InstanceTemplate()->SetInternalFieldCount(1);
-    lcons->SetClassName(NanNew("Zipfile"));
+    lcons->SetClassName(Nan::New("Zipfile").ToLocalChecked());
 
     // functions
-    NODE_SET_PROTOTYPE_METHOD(lcons, "readFileSync", readFileSync);
-    NODE_SET_PROTOTYPE_METHOD(lcons, "readFile", readFile);
-    NODE_SET_PROTOTYPE_METHOD(lcons, "copyFileSync", copyFileSync);
-    NODE_SET_PROTOTYPE_METHOD(lcons, "copyFile", copyFile);
+    lcons->PrototypeTemplate()->Set(
+      Nan::New<v8::String>("readFileSync").ToLocalChecked(),
+      Nan::New<v8::FunctionTemplate>(readFileSync)->GetFunction()
+    );
+    lcons->PrototypeTemplate()->Set(
+      Nan::New<v8::String>("readFile").ToLocalChecked(),
+      Nan::New<v8::FunctionTemplate>(readFile)->GetFunction()
+    );
+    lcons->PrototypeTemplate()->Set(
+      Nan::New<v8::String>("copyFileSync").ToLocalChecked(),
+      Nan::New<v8::FunctionTemplate>(copyFileSync)->GetFunction()
+    );
+    lcons->PrototypeTemplate()->Set(
+      Nan::New<v8::String>("copyFile").ToLocalChecked(),
+      Nan::New<v8::FunctionTemplate>(copyFile)->GetFunction()
+    );
 
     // properties
-    lcons->InstanceTemplate()->SetAccessor(NanNew("count"), get_prop);
-    lcons->InstanceTemplate()->SetAccessor(NanNew("names"), get_prop);
+    Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("count").ToLocalChecked(), get_prop);
+    Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("names").ToLocalChecked(), get_prop);
 
-    target->Set(NanNew("ZipFile"),lcons->GetFunction());
-    NanAssignPersistent(constructor, lcons);
+    target->Set(Nan::New("ZipFile").ToLocalChecked(),lcons->GetFunction());
+    constructor.Reset(lcons);
 }
 
 ZipFile::ZipFile(std::string const& file_name)
@@ -51,20 +63,20 @@ ZipFile::ZipFile(std::string const& file_name)
       file_name_(file_name),
       names_() {}
 
-NAN_METHOD(ZipFile::New)
+void ZipFile::New(const Nan::FunctionCallbackInfo<v8::Value>& args)
 {
-    NanScope();
+    Nan::HandleScope scope;
 
     if (!args.IsConstructCall())
     {
-        NanThrowError("Cannot call constructor as function, you need to use 'new' keyword");
-        NanReturnUndefined();
+        Nan::ThrowError("Cannot call constructor as function, you need to use 'new' keyword");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     if (args.Length() != 1 || !args[0]->IsString())
     {
-        NanThrowError("first argument must be a path to a zipfile");
-        NanReturnUndefined();
+        Nan::ThrowError("first argument must be a path to a zipfile");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     std::string input_file = TOSTR(args[0]);
@@ -79,8 +91,8 @@ NAN_METHOD(ZipFile::New)
         std::stringstream s;
         s << "cannot open file: " << input_file << " error: " << errstr << "\n";
         if (za) zip_close(za);
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        Nan::ThrowError(s.str().c_str());
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     ZipFile* zf = new ZipFile(input_file);
@@ -96,25 +108,25 @@ NAN_METHOD(ZipFile::New)
     }
     if (za) zip_close(za);
     zf->Wrap(args.This());
-    NanReturnValue(args.This());
+    args.GetReturnValue().Set(args.This());
 }
 
-NAN_GETTER(ZipFile::get_prop)
+void ZipFile::get_prop(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& args)
 {
-    NanScope();
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.Holder());
     std::string a = TOSTR(property);
     if (a == "count") {
-        NanReturnValue(NanNew<Integer>(static_cast<uint32_t>(zf->names_.size())));
+        args.GetReturnValue().Set(Nan::New<Integer>(static_cast<uint32_t>(zf->names_.size())));
     } else if (a == "names") {
         unsigned num = zf->names_.size();
-        Local<Array> a = NanNew<Array>(num);
+        Local<Array> a = Nan::New<Array>(num);
         for (unsigned i = 0; i < num; ++i) {
-            a->Set(i, NanNew(zf->names_[i].c_str()));
+            a->Set(i, Nan::New(zf->names_[i].c_str()).ToLocalChecked());
         }
-        NanReturnValue(a);
+        args.GetReturnValue().Set(a);
+    } else {
+        args.GetReturnValue().SetUndefined();
     }
-    NanReturnUndefined();
 }
 
 void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
@@ -187,25 +199,25 @@ void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
     if (za) zip_close(za);
 }
 
-NAN_METHOD(ZipFile::copyFileSync)
+void ZipFile::copyFileSync(const Nan::FunctionCallbackInfo<v8::Value>& args)
 {
-    NanScope();
+    Nan::HandleScope scope;
 
     if (args.Length() < 2 || !args[0]->IsString() || !args[1]->IsString())
     {
-        NanThrowError("requires two args: first argument must be a filename inside the zip and second must be a filename to write to.");
-        NanReturnUndefined();
+        Nan::ThrowError("requires two args: first argument must be a filename inside the zip and second must be a filename to write to.");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     std::string from = TOSTR(args[0]);
     std::string to = TOSTR(args[1]);
     ZipFile* zf = ObjectWrap::Unwrap<ZipFile>(args.This());
     try {
-        _copyFile(from,to,zf);    
+        _copyFile(from,to,zf);
     } catch (std::exception const& ex) {
-        NanThrowError(ex.what());        
+        Nan::ThrowError(ex.what());
     }
-    NanReturnUndefined();
+    args.GetReturnValue().SetUndefined();
 }
 
 struct copy_file_baton {
@@ -214,29 +226,29 @@ struct copy_file_baton {
     std::string from;
     std::string to;
     std::string error_name;
-    Persistent<Function> cb;
+    Nan::Persistent<Function> cb;
 };
 
-NAN_METHOD(ZipFile::copyFile)
+void ZipFile::copyFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
 {
-    NanScope();
+    Nan::HandleScope scope;
     if (args.Length() < 3)
     {
-        NanThrowError("requires three arguments: filename inside the zip, a filename to write to, and a callback");
-        NanReturnUndefined();
+        Nan::ThrowError("requires three arguments: filename inside the zip, a filename to write to, and a callback");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     if (!args[0]->IsString() || !args[1]->IsString())
     {
-        NanThrowError("first argument must be a filename inside the zip and second must be a filename to write to.");
-        NanReturnUndefined();
+        Nan::ThrowError("first argument must be a filename inside the zip and second must be a filename to write to.");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     // ensure function callback
     Local<Value> callback = args[args.Length() - 1];
     if (!callback->IsFunction()) {
-        NanThrowTypeError("last argument must be a callback function");
-        NanReturnUndefined();
+        Nan::ThrowTypeError("last argument must be a callback function");
+        args.GetReturnValue().SetUndefined(); return;
     }
     std::string from = TOSTR(args[0]);
     std::string to = TOSTR(args[1]);
@@ -247,10 +259,10 @@ NAN_METHOD(ZipFile::copyFile)
     closure->zf = zf;
     closure->from = from;
     closure->to = to;
-    NanAssignPersistent(closure->cb, callback.As<Function>());
+    closure->cb.Reset(callback.As<Function>());
     uv_queue_work(uv_default_loop(), &closure->request, Work_CopyFile, (uv_after_work_cb)Work_AfterCopyFile);
     zf->Ref();
-    NanReturnUndefined();
+    args.GetReturnValue().SetUndefined();
 }
 
 
@@ -264,28 +276,28 @@ void ZipFile::Work_CopyFile(uv_work_t* req) {
 }
 
 void ZipFile::Work_AfterCopyFile(uv_work_t* req) {
-    NanScope();
+    Nan::HandleScope scope;
     copy_file_baton *closure = static_cast<copy_file_baton *>(req->data);
     if (!closure->error_name.empty()) {
-        Local<Value> argv[1] = { NanError(closure->error_name.c_str()) };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 1, argv);
+        Local<Value> argv[1] = { Nan::Error(closure->error_name.c_str()) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
     } else {
-        Local<Value> argv[1] = { NanNull() };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 1, argv);
+        Local<Value> argv[1] = { Nan::Null() };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
     }
     closure->zf->Unref();
-    NanDisposePersistent(closure->cb);
+    closure->cb.Reset();
     delete closure;
 }
 
-NAN_METHOD(ZipFile::readFileSync)
+void ZipFile::readFileSync(const Nan::FunctionCallbackInfo<v8::Value>& args)
 {
-    NanScope();
+    Nan::HandleScope scope;
 
     if (args.Length() != 1 || !args[0]->IsString())
     {
-        NanThrowError("first argument must be a file name inside the zip");
-        NanReturnUndefined();
+        Nan::ThrowError("first argument must be a file name inside the zip");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     std::string name = TOSTR(args[0]);
@@ -300,8 +312,8 @@ NAN_METHOD(ZipFile::readFileSync)
     if (idx == -1) {
         std::stringstream s;
         s << "No file found by the name of: '" << name << "\n";
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        Nan::ThrowError(s.str().c_str());
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     int err;
@@ -312,8 +324,8 @@ NAN_METHOD(ZipFile::readFileSync)
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
         if (za) zip_close(za);
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        Nan::ThrowError(s.str().c_str());
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     struct zip_file *zf_ptr = NULL;
@@ -323,13 +335,13 @@ NAN_METHOD(ZipFile::readFileSync)
         if (za) zip_close(za);
         std::stringstream s;
         s << "cannot open file #" << idx << " in " << name << ": archive error: " << zip_strerror(za) << "\n";
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        Nan::ThrowError(s.str().c_str());
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     struct zip_stat st;
     zip_stat_index(za, idx, 0, &st);
-  
+
     std::vector<unsigned char> data;
     data.clear();
     data.resize(st.size);
@@ -342,13 +354,13 @@ NAN_METHOD(ZipFile::readFileSync)
         s << "error reading file #" << idx << " in " << name << ": archive error: " << zip_file_strerror(zf_ptr) << "\n";
         if (zf_ptr) zip_fclose(zf_ptr);
         if (za) zip_close(za);
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        Nan::ThrowError(s.str().c_str());
+        args.GetReturnValue().SetUndefined(); return;
     }
-    Local<Object> retbuf = NanNewBufferHandle(reinterpret_cast<char *>(&data[0]), data.size());
+    Local<Object> retbuf = Nan::NewBuffer(reinterpret_cast<char *>(&data[0]), data.size()).ToLocalChecked();
     if (zf_ptr) zip_fclose(zf_ptr);
     if (za) zip_close(za);
-    NanReturnValue(retbuf);
+    args.GetReturnValue().Set(retbuf);
 }
 
 typedef struct {
@@ -359,31 +371,31 @@ typedef struct {
     bool error;
     std::string error_name;
     std::vector<unsigned char> data;
-    Persistent<Function> cb;
+    Nan::Persistent<Function> cb;
 } closure_t;
 
 
-NAN_METHOD(ZipFile::readFile)
+void ZipFile::readFile(const Nan::FunctionCallbackInfo<v8::Value>& args)
 {
-    NanScope();
+    Nan::HandleScope scope;
     if (args.Length() < 2)
     {
-        NanThrowError("requires two arguments, the name of a file and a callback");
-        NanReturnUndefined();
+        Nan::ThrowError("requires two arguments, the name of a file and a callback");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     // first arg must be name
     if (!args[0]->IsString())
     {
-        NanThrowError("first argument must be a file name inside the zip");
-        NanReturnUndefined();
+        Nan::ThrowError("first argument must be a file name inside the zip");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     // ensure function callback
     Local<Value> callback = args[args.Length() - 1];
     if (!callback->IsFunction()) {
-        NanThrowTypeError("last argument must be a callback function");
-        NanReturnUndefined();
+        Nan::ThrowTypeError("last argument must be a callback function");
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     std::string name = TOSTR(args[0]);
@@ -400,19 +412,19 @@ NAN_METHOD(ZipFile::readFile)
         std::stringstream s;
         s << "cannot open file: " << zf->file_name_ << " error: " << errstr << "\n";
         if (closure->za) zip_close(closure->za);
-        NanDisposePersistent(closure->cb);
+        closure->cb.Reset();
         delete closure;
-        NanThrowError(s.str().c_str());
-        NanReturnUndefined();
+        Nan::ThrowError(s.str().c_str());
+        args.GetReturnValue().SetUndefined(); return;
     }
 
     closure->zf = zf;
     closure->error = false;
     closure->name = name;
-    NanAssignPersistent(closure->cb, callback.As<Function>());
+    closure->cb.Reset(callback.As<Function>());
     uv_queue_work(uv_default_loop(), &closure->request, Work_ReadFile, (uv_after_work_cb)Work_AfterReadFile);
     zf->Ref();
-    NanReturnUndefined();
+    args.GetReturnValue().SetUndefined();
 }
 
 
@@ -462,22 +474,22 @@ void ZipFile::Work_ReadFile(uv_work_t* req) {
 }
 
 void ZipFile::Work_AfterReadFile(uv_work_t* req) {
-    NanScope();
+    Nan::HandleScope scope;
 
     closure_t *closure = static_cast<closure_t *>(req->data);
 
     if (closure->error) {
-        Local<Value> argv[1] = { NanError(closure->error_name.c_str()) };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 1, argv);
+        Local<Value> argv[1] = { Nan::Error(closure->error_name.c_str()) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
     } else {
-        Local<Object> retbuf = NanNewBufferHandle(reinterpret_cast<char *>(&closure->data[0]), closure->data.size());
-        Local<Value> argv[2] = { NanNull(), retbuf };
-        NanMakeCallback(NanGetCurrentContext()->Global(), NanNew(closure->cb), 2, argv);
+        Local<Object> retbuf = Nan::NewBuffer(reinterpret_cast<char *>(&closure->data[0]), closure->data.size()).ToLocalChecked();
+        Local<Value> argv[2] = { Nan::Null(), retbuf };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 2, argv);
     }
 
     if (closure->za) zip_close(closure->za);
     closure->zf->Unref();
-    NanDisposePersistent(closure->cb);
+    closure->cb.Reset();
     delete closure;
 }
 
@@ -486,15 +498,14 @@ extern "C" {
         ZipFile::Initialize(target);
 
         // node-zipfile version
-        target->Set(NanNew("version"), NanNew("0.3.1"));
+        target->Set(Nan::New("version").ToLocalChecked(), Nan::New("0.5.8").ToLocalChecked());
 
         // versions of deps
-        Local<Object> versions = NanNew<Object>();
-        versions->Set(NanNew("node"), NanNew(NODE_VERSION+1));
-        versions->Set(NanNew("v8"), NanNew(V8::GetVersion()));
-        target->Set(NanNew("versions"), versions);
+        Local<Object> versions = Nan::New<Object>();
+        versions->Set(Nan::New("node").ToLocalChecked(), Nan::New(NODE_VERSION+1).ToLocalChecked());
+        versions->Set(Nan::New("v8").ToLocalChecked(), Nan::New(V8::GetVersion()).ToLocalChecked());
+        target->Set(Nan::New("versions").ToLocalChecked(), versions);
     }
     #define MAKE_MODULE(_modname) NODE_MODULE( _modname, init)
     MAKE_MODULE(MODULE_NAME)
 }
-
