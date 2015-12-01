@@ -1,5 +1,8 @@
 # changelog
 
+## v0.5.9
+
+ - Upgraded to zlib 1.2.8
 
 ## v0.5.8
 
