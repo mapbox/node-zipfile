@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 {
+  'includes': [ '../common-libzip.gypi' ],
   'variables': {
     'use_system_zlib%': 0
   },
