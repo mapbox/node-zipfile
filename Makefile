@@ -1,6 +1,6 @@
 #http://www.gnu.org/prep/standards/html_node/Standard-Targets.html#Standard-Targets
 
-all: build
+all: build-all
 
 ./node_modules/node-pre-gyp:
 	npm install node-pre-gyp
@@ -9,11 +9,17 @@ all: build
 	npm install `node -e "console.log(Object.keys(require('./package.json').dependencies).join(' '))"` \
 	`node -e "console.log(Object.keys(require('./package.json').devDependencies).join(' '))"` --clang=1
 
-build: ./node_modules
-	./node_modules/.bin/node-pre-gyp build --loglevel=silent --clang=1
+./build:
+	./node_modules/.bin/node-pre-gyp configure --loglevel=error --clang=1
 
-debug: ./node_modules
+build-all: ./node_modules ./build
+	./node_modules/.bin/node-pre-gyp build --loglevel=error --clang=1
+
+debug: ./node_modules ./build
 	./node_modules/.bin/node-pre-gyp build --debug --clang=1
+
+coverage: ./node_modules ./build
+	./node_modules/.bin/node-pre-gyp build --debug --clang=1 --coverage=true
 
 verbose: ./node_modules
 	./node_modules/.bin/node-pre-gyp build --loglevel=verbose --clang=1
@@ -21,12 +27,19 @@ verbose: ./node_modules
 clean:
 	@rm -rf ./build
 	rm -rf lib/binding/
-	rm -rf ./test/tmp/*
+	rm ./test/tmp/*
 	echo > ./test/tmp/placeholder.txt
 	rm -rf ./node_modules/
+	rm -f ./*tgz
 
 grind:
 	valgrind --leak-check=full node node_modules/.bin/_mocha
+
+testpack:
+	rm -f ./*tgz
+	npm pack
+	tar -ztvf *tgz
+	rm -f ./*tgz
 
 rebuild:
 	@make clean
