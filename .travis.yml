@@ -83,8 +83,6 @@ install:
 
 before_script:
  - npm test
-
-script:
  - if [[ ${CXX} =~ "clang" ]] && [[ ${COVERAGE} == false ]]; then
       if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
         node-pre-gyp publish;
@@ -92,3 +90,6 @@ script:
         node-pre-gyp unpublish publish;
       fi
    fi
+
+script:
+ - if [[ ${COVERAGE} == true ]]; then ./mason_packages/.link/bin/cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude tools --exclude docs --exclude sdk --exclude build/Release/obj/gen --exclude deps > /dev/null; fi;
