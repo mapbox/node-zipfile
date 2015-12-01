@@ -34,7 +34,7 @@ zf.copyFile(zip_entry_name,output_file, function(err) {
 
 ## Depends
 
- - Node v0.10.x or v0.8.x
+ - Node v0.10.x, v0.12.x, v4.x, or v5.x
 
 ## Installation
 
