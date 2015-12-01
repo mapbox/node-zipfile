@@ -1,5 +1,10 @@
 # changelog
 
+
+## v0.5.8
+
+ - Updated to work with NAN 2 and Node.js 4/5 (@elaberge)
+
 ## v0.5.7
 
  - Updated node-pre-gyp to v0.6.2

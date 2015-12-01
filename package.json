@@ -14,7 +14,7 @@
   "licenses"      : ["BSD"],
   "dependencies"  : {
     "nan": "~2.1.0",
-    "node-pre-gyp": "~0.6.13"
+    "node-pre-gyp": "~0.6.17"
   },
   "bundledDependencies":["node-pre-gyp"],
   "devDependencies": {

@@ -24,6 +24,12 @@ environment:
     - nodejs_version: 4.2.1
       platform: x64
       msvs_toolset: 12
+    - nodejs_version: 5.1.0
+      platform: x86
+      msvs_toolset: 12
+    - nodejs_version: 5.1.0
+      platform: x64
+      msvs_toolset: 12
     # custom 64 bit visual studio 2014 builds
     - nodejs_version: 0.10.36
       platform: x64
