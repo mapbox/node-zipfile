@@ -4,66 +4,91 @@ os:
   - linux
   - osx
 
-compiler:
- - clang
+addons:
+  apt:
+    sources:
+     - ubuntu-toolchain-r-test
+     - llvm-toolchain-precise-3.5
+    packages:
+     - clang-3.5
+
+matrix:
+  include:
+     # Coverage
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="4" COVERAGE=true # node abi 46
+     # Linux
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="5" # node abi 47
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="4" # node abi 46
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="0.12" # node abi 14
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="0.10" # node abi 11
+     # OS X
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="5" # node abi 47
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="4" # node abi 46
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="0.12" # node abi 14
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="0.10" # node abi 11
 
 env:
-  matrix:
-   - NODE_VERSION="0.10" JOBS=8
-   - NODE_VERSION="0.12" JOBS=8
-   - NODE_VERSION="4" JOBS=8
-   - NODE_VERSION="5" JOBS=8
   global:
+   - JOBS: "8"
    - secure: hBUfRqVPovL7PVOJONI8sakIUtggpM74qMPdi5zaMpJhuV/QWfROOVc05ULEr1P0Fra2WpQ62mp8lfa1NbB6sQfT/8Y6u0lucf9SsIUBJzDrSmfXv2NDgpJn9RQmfsZgLfDuTwRLVROkNSTowUq3tnhDIzX/NyB7uOp1TZNEJ8A=
    - secure: xWyq1Ys9lpMUVCh73q5YDDfC4nLeeydqIS4S+lJ/t/jUCNHDwe1x5XrxRIALi74qNmHg6eTcOeEW5iot/sf1oUJIA1oPt9iMIMolg9iYWJKWN4E6gWcIigYu9ZDl3GJsHyiNs/dVlZjzY1YKzyvgZ2MRfy4l0rPShCxROoCiCIM=
 
 before_install:
- - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
- - echo $COMMIT_MESSAGE
- - export PATH=`pwd`/node_modules/.bin:$PATH
- # here we set up the node version on the fly based on the matrix value.
- # This is done manually so that it is easy to flip the 'language' to
- # objective-c in another branch (to run the same travis.yml on OS X)
- - rm -rf ~/.nvm && git clone --depth 1 https://github.com/creationix/nvm.git ~/.nvm
- - source ~/.nvm/nvm.sh
- - nvm install $NODE_VERSION
- - nvm use $NODE_VERSION
- - node --version
- - npm --version
- - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
- - if [[ "$platform" == 'linux' ]]; then sudo apt-get update -y; fi;
- - if [[ "$platform" == 'linux' ]]; then sudo apt-get install -y valgrind; fi;
+ - scripts/validate_tag.sh
+ - export COVERAGE=${COVERAGE:-false}
+ - if [[ $(uname -s) == 'Linux' ]]; then
+     export CXX="clang++-3.5";
+     export CC="clang-3.5";
+     export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
+   else
+     export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
+   fi;
+ - source ./scripts/install_node.sh ${NODE_VERSION}
+ - export PATH=./node_modules/.bin/:$PATH
 
 install:
- # test building from source
- - npm install --build-from-source --clang=1
+ - COMMIT_MESSAGE=$(git show -s --format=%B $TRAVIS_COMMIT | tr -d '\n')
+ - if [[ ${COVERAGE} == true ]]; then
+     if [[ $(uname -s) == 'Linux' ]]; then
+       PYTHONUSERBASE=$(pwd)/mason_packages/.link pip install --user cpp-coveralls;
+     else
+       PYTHONUSERBASE=$(pwd)/mason_packages/.link easy_install --user cpp-coveralls;
+     fi;
+     export CXXFLAGS="--coverage";
+     export LDFLAGS="--coverage";
+     npm install --build-from-source --clang=1 --debug;
+   else
+     npm install --build-from-source --clang=1;
+   fi
  - node-pre-gyp package testpackage
- - npm test
- - if [[ "$platform" == 'linux' ]]; then valgrind --leak-check=full --log-fd=1 node ./node_modules/.bin/_mocha | grep definitely; fi;
- # test unzipping large file
- - wget http://mapbox.s3.amazonaws.com/tmp/too-large.zip
- - node bench/largefile.js too-large.zip
- - time unzip -o too-large.zip
- - time dd if=/dev/urandom of=random.txt bs=1000000000 count=1
- - du -h *txt
- - time zip random.zip random.txt
- - time unzip -o random.zip
- - node bench/largefile.js random.zip
+ - ldd ./lib/*/*/*node;
 
 before_script:
- # test publishing and installing from remote if
- # [publish binary] is present in commit message
- - echo "before_script"
- - PUBLISH_BINARY=false
- - echo $COMMIT_MESSAGE
- - if test "${COMMIT_MESSAGE#*'[publish binary]'}" != "$COMMIT_MESSAGE"; then echo yes;PUBLISH_BINARY=true; fi;
- - echo $PUBLISH_BINARY
- - if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp unpublish publish info; rm -rf {build,lib/binding}; npm install --fallback-to-build=false; npm test; fi
+ - npm test
 
 script:
- # test building with against shared libzip
- - rm -rf ./build
- - rm -rf ./lib/binding
- - if [[ "$platform" == 'linux' ]]; then sudo apt-get -qq install libzip-dev; npm install --build-from-source --shared_libzip  --clang=1; fi
- - if [[ "$platform" == 'darwin' ]]; then brew install libzip; npm install --build-from-source --shared_libzip --shared_libzip_includes=`brew --prefix`/include --shared_libzip_libpath=`brew --prefix`/lib  --clang=1; fi
- - npm test
+ - if [[ ${CXX} =~ "clang" ]] && [[ ${COVERAGE} == false ]]; then
+      if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
+        node-pre-gyp publish;
+      elif [[ ${COMMIT_MESSAGE} =~ "[republish binary]" ]]; then
+        node-pre-gyp unpublish publish;
+      fi
+   fi
