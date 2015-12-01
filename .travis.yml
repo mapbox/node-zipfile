@@ -1,9 +1,5 @@
 language: cpp
 
-os:
-  - linux
-  - osx
-
 addons:
   apt:
     sources:
@@ -79,12 +75,14 @@ install:
      npm install --build-from-source --clang=1;
    fi
  - node-pre-gyp package testpackage
- - ldd ./lib/*/*/*node;
+ - if [[ $(uname -s) == 'Linux' ]]; then
+     ldd ./lib/*/*/*node;
+   else
+     otool -L ./lib/*/*/*node;
+   fi
 
 before_script:
  - npm test
-
-script:
  - if [[ ${CXX} =~ "clang" ]] && [[ ${COVERAGE} == false ]]; then
       if [[ ${COMMIT_MESSAGE} =~ "[publish binary]" ]]; then
         node-pre-gyp publish;
@@ -92,3 +90,6 @@ script:
         node-pre-gyp unpublish publish;
       fi
    fi
+
+script:
+ - if [[ ${COVERAGE} == true ]]; then ./mason_packages/.link/bin/cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude tools --exclude docs --exclude sdk --exclude build/Release/obj/gen --exclude src/node_zipfile.hpp --exclude deps > /dev/null; fi;
