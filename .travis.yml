@@ -1,9 +1,5 @@
 language: cpp
 
-os:
-  - linux
-  - osx
-
 addons:
   apt:
     sources:
@@ -79,7 +75,11 @@ install:
      npm install --build-from-source --clang=1;
    fi
  - node-pre-gyp package testpackage
- - ldd ./lib/*/*/*node;
+ - if [[ $(uname -s) == 'Linux' ]]; then
+     ldd ./lib/*/*/*node;
+   else
+     otool -L ./lib/*/*/*node;
+   fi
 
 before_script:
  - npm test
