@@ -92,4 +92,4 @@ before_script:
    fi
 
 script:
- - if [[ ${COVERAGE} == true ]]; then ./mason_packages/.link/bin/cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude tools --exclude docs --exclude sdk --exclude build/Release/obj/gen --exclude deps > /dev/null; fi;
+ - if [[ ${COVERAGE} == true ]]; then ./mason_packages/.link/bin/cpp-coveralls --exclude node_modules --exclude tests --build-root build --gcov-options '\-lp' --exclude tools --exclude docs --exclude sdk --exclude build/Release/obj/gen --exclude src/node_zipfile.hpp --exclude deps > /dev/null; fi;
