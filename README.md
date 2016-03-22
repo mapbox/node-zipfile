@@ -11,7 +11,18 @@ Bindings to [libzip](http://nih.at/libzip/libzip.html) for handling zipfile arch
 
 ```js
 var zipfile = require('zipfile');
+
+// Creating a zipfile object
 var zf = new zipfile.ZipFile('./test/data/world_merc.zip');
+
+// the zipfile has a list of names:
+// zf.names[0] === 'world_merc.prj'
+
+// the zipfile also has a count property that is the number of files contained
+// zf.count == 2
+
+// finally it has a readFile method that uncompresses a single file
+// into a Buffer object
 zf.readFile('world_merc.prj', function(err, buffer) {
     if (err) throw err;
     console.log(buffer.toString());
