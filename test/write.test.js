@@ -38,9 +38,10 @@ describe('Async Writes', function(){
                         zf.copyFile(name,dest2,function(err) {
                             if (err) throw err;
                             assert.ok(existsSync(dest2));
-                            assert.equal(meta[name].size,fs.readFileSync(dest2).length)
+                            var buffer2 = fs.readFileSync(dest2);
+                            assert.equal(meta[name].size,buffer2.length)
                             var shasum2 = crypto.createHash('md5');
-                            shasum2.update(buffer);
+                            shasum2.update(buffer2);
                             var md52 = shasum2.digest('hex');
                             assert.equal(meta[name].md5,md52);
                             done();
