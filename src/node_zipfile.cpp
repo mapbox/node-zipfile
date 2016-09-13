@@ -166,10 +166,11 @@ void _copyFile(std::string const& from, std::string const& to, ZipFile* zf)
     struct zip_file *zf_ptr = NULL;
 
     if ((zf_ptr=zip_fopen_index(za, idx, 0)) == NULL) {
-        if (zf_ptr) zip_fclose(zf_ptr);
-        if (za) zip_close(za);
         std::stringstream s;
         s << "cannot open file #" << idx << " in " << from << ": archive error: " << zip_strerror(za) << "\n";
+        if (zf_ptr) zip_fclose(zf_ptr);
+        if (za) zip_close(za);
+        fclose(fo);
         throw std::runtime_error(s.str().c_str());
     }
 
