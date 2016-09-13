@@ -1,5 +1,11 @@
 # changelog
 
+## v0.5.10
+
+ - Added support for node v6
+ - Upgraded to nan@2.4.x
+ - Fixed resource leak (#69)
+
 ## v0.5.9
 
  - Upgraded to zlib 1.2.8
