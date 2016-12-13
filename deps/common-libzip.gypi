@@ -6,6 +6,10 @@
   'target_defaults': {
     'default_configuration': 'Release',
     'msbuild_toolset':'<(toolset)',
+    'cflags_cc' : [
+      '-std=c++11',
+    ],
+    'cflags_cc!': ['-std=gnu++0x','-fno-rtti', '-fno-exceptions'],
     'configurations': {
       'Debug': {
         'defines!': [
