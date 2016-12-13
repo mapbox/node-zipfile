@@ -2,7 +2,7 @@
 
 ## v0.5.10
 
- - Added support for node v6
+ - Added support for node v6, v7
  - Upgraded to nan@2.4.x
  - Fixed resource leak (#69)
 
