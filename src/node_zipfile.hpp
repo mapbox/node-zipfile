@@ -16,7 +16,7 @@
 class ZipFile: public node::ObjectWrap {
  public:
     static Nan::Persistent<v8::FunctionTemplate> constructor;
-    static void Initialize(v8::Handle<v8::Object> target);
+    static void Initialize(v8::Local<v8::Object> target);
     static void New(const Nan::FunctionCallbackInfo<v8::Value>& args);
     static void get_prop(v8::Local<v8::String> property, const Nan::PropertyCallbackInfo<v8::Value>& args);
     static void copyFile(const Nan::FunctionCallbackInfo<v8::Value>& args);
