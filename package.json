@@ -22,12 +22,15 @@
     "aws-sdk": "2.x",
     "queue-async":"~1.2.1"
   },
+  "bundledDependencies": [
+      "node-pre-gyp"
+  ],
   "bin"           : {
     "unzip.js"    : "./bin/unzip.js"
   },
   "scripts"       : {
+    "prepublish": "npm ls",
     "test"        : "mocha -R spec",
-    "preinstall"  : "npm install node-pre-gyp",
     "install"     : "node-pre-gyp install --fallback-to-build"
   },
   "binary": {
