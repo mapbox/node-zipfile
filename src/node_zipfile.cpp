@@ -26,29 +26,17 @@ using namespace v8;
 
 Nan::Persistent<FunctionTemplate> ZipFile::constructor;
 
-void ZipFile::Initialize(Handle<Object> target) {
+void ZipFile::Initialize(Local<Object> target) {
     Nan::HandleScope scope;
     Local<FunctionTemplate> lcons = Nan::New<FunctionTemplate>(ZipFile::New);
     lcons->InstanceTemplate()->SetInternalFieldCount(1);
     lcons->SetClassName(Nan::New("Zipfile").ToLocalChecked());
 
     // functions
-    lcons->PrototypeTemplate()->Set(
-      Nan::New<v8::String>("readFileSync").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(readFileSync)->GetFunction()
-    );
-    lcons->PrototypeTemplate()->Set(
-      Nan::New<v8::String>("readFile").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(readFile)->GetFunction()
-    );
-    lcons->PrototypeTemplate()->Set(
-      Nan::New<v8::String>("copyFileSync").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(copyFileSync)->GetFunction()
-    );
-    lcons->PrototypeTemplate()->Set(
-      Nan::New<v8::String>("copyFile").ToLocalChecked(),
-      Nan::New<v8::FunctionTemplate>(copyFile)->GetFunction()
-    );
+    Nan::SetPrototypeMethod(lcons, "readFileSync", readFileSync);
+    Nan::SetPrototypeMethod(lcons, "readFile", readFile);
+    Nan::SetPrototypeMethod(lcons, "copyFileSync", copyFileSync);
+    Nan::SetPrototypeMethod(lcons, "copyFile", copyFile);
 
     // properties
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("count").ToLocalChecked(), get_prop);
@@ -495,7 +483,7 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req) {
 }
 
 extern "C" {
-    static void init(Handle<Object> target) {
+    static void init(Local<Object> target) {
         ZipFile::Initialize(target);
 
         // node-zipfile version
