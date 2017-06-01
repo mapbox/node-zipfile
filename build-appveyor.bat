@@ -17,7 +17,9 @@ IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="0" (GOTO UPDATE_NODE_G
 :UPDATE_NODE_GYP
 ECHO updating node-gyp
 ::PUSHD %AppData%\npm\node_modules\npm
-CALL npm install -g node-gyp@latest
+::CALL npm install -g node-gyp@latest
+CALL npm i npm@2 -g
+
 
 :AFTER_UPDATE_NODE_GYP
 
