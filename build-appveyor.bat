@@ -10,7 +10,7 @@ IF %ERRORLEVEL% NEQ 0 ECHO could not install requested node version && GOTO ERRO
 :: use 64 bit python if platform is 64 bit
 IF /I "%PLATFORM%"=="x64" set PATH=C:\Python27-x64;%PATH%
 
-IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:0,1%"=="4" (GOTO SET_CA_FILE) ELSE (GOTO AFTER_CA_FILE_FIX)
+IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="4" (GOTO SET_CA_FILE) ELSE (GOTO AFTER_CA_FILE_FIX)
 
 :SET_CA_FILE
 ECHO workaround node 4.x x86 bug by setting 'cafile' and 'strict-ssl'
