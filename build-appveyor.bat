@@ -10,8 +10,18 @@ IF %ERRORLEVEL% NEQ 0 ECHO could not install requested node version && GOTO ERRO
 :: use 64 bit python if platform is 64 bit
 IF /I "%PLATFORM%"=="x64" set PATH=C:\Python27-x64;%PATH%
 
-IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="4" (GOTO SET_CA_FILE) ELSE (GOTO AFTER_CA_FILE_FIX)
+:: workaround 'win_delay_load_hook.cc: redefinition' error by updating node-gyp
+:: https://github.com/mapbox/node-pre-gyp/issues/209
+:: https://github.com/nodejs/node-gyp/issues/972#issuecomment-229935374
+IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="0" (GOTO UPDATE_NODE_GYP) ELSE (GOTO AFTER_UPDATE_NODE_GYP)
+:UPDATE_NODE_GYP
+ECHO updating node-gyp
+::PUSHD %AppData%\npm\node_modules\npm
+CALL npm install -g node-gyp@latest
 
+:AFTER_UPDATE_NODE_GYP
+
+IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="4" (GOTO SET_CA_FILE) ELSE (GOTO AFTER_CA_FILE_FIX)
 :SET_CA_FILE
 ECHO workaround node 4.x x86 bug by setting 'cafile' and 'strict-ssl'
 :: HACK!! to make node@4.x x86 builds work
