@@ -10,18 +10,17 @@ IF %ERRORLEVEL% NEQ 0 ECHO could not install requested node version && GOTO ERRO
 :: use 64 bit python if platform is 64 bit
 IF /I "%PLATFORM%"=="x64" set PATH=C:\Python27-x64;%PATH%
 
-:: workaround 'win_delay_load_hook.cc: redefinition' error by updating node-gyp
+:: node 0.10: workaround 'win_delay_load_hook.cc: redefinition' error by updating node-gyp
 :: https://github.com/mapbox/node-pre-gyp/issues/209
 :: https://github.com/nodejs/node-gyp/issues/972#issuecomment-229935374
-IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="0" (GOTO UPDATE_NODE_GYP) ELSE (GOTO AFTER_UPDATE_NODE_GYP)
-:UPDATE_NODE_GYP
-ECHO updating node-gyp
-::PUSHD %AppData%\npm\node_modules\npm
-::CALL npm install -g node-gyp@latest
+IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="0" (GOTO UPDATE_NPM) ELSE (GOTO AFTER_UPDATE_NPM)
+:UPDATE_NPM
+ECHO updating npm
 CALL npm i npm@2 -g
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
+:AFTER_UPDATE_NPM
 
-:AFTER_UPDATE_NODE_GYP
 
 IF /I "%PLATFORM%"=="x86" IF /I "%nodejs_version:~0,1%"=="4" (GOTO SET_CA_FILE) ELSE (GOTO AFTER_CA_FILE_FIX)
 :SET_CA_FILE
@@ -33,6 +32,7 @@ CALL npm config set -g cafile=package.json
 CALL npm config set -g strict-ssl=false
 
 :AFTER_CA_FILE_FIX
+
 
 ECHO activating VS command prompt...
 IF /I %platform% == x64 CALL "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
