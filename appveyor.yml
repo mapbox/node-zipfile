@@ -7,65 +7,34 @@ environment:
     secure: 1amwJJw9fu0j6dXnc5KsAQbSYf7Cjw/dapT6OZWABa6nc52grkKeLQ+DGaOfQz8i
   matrix:
     - nodejs_version: 0.10
-      platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
+      platform: x64
     - nodejs_version: 0.10
-      platform: x64
-      msvs_toolset: 12
-    - nodejs_version: 4
+      msvs_toolset: 14
       platform: x86
-      msvs_toolset: 12
-    - nodejs_version: 4
+    # Fixed at version until https://github.com/nodejs/node/issues/12244 is resolved by nodejs
+    - nodejs_version: 4.8.1
+      msvs_toolset: 14
       platform: x64
-      msvs_toolset: 12
-    - nodejs_version: 6
+    - nodejs_version: 4.8.1
+      msvs_toolset: 14
       platform: x86
-      msvs_toolset: 12
-    - nodejs_version: 6
+    # Fixed at version until https://github.com/nodejs/node/issues/12244 is resolved by nodejs
+    - nodejs_version: 6.10.1
+      msvs_toolset: 14
       platform: x64
-      msvs_toolset: 12
-    - nodejs_version: 7
+    - nodejs_version: 6.10.1
+      msvs_toolset: 14
       platform: x86
-      msvs_toolset: 12
-    - nodejs_version: 7
+    - nodejs_version: 8
+      msvs_toolset: 14
       platform: x64
-      msvs_toolset: 12
+    - nodejs_version: 8
+      msvs_toolset: 14
+      platform: x86
 
 install:
-  # add local node to path (since we install it for msvs_toolset == 14)
-  - SET PATH=%CD%;%PATH%;
-  # add local node-pre-gyp dir to path
-  - SET PATH=node_modules\.bin;%PATH%
-  # use 64 bit python if platform is 64 bit
-  - if "%PLATFORM%" == "x64" set PATH=C:\Python27-x64;%PATH%
-  - SET ARCHPATH=
-  - if %platform% == x64 (SET ARCHPATH=x64/)
-  # install node version per visual studio toolset
-  - if "%msvs_toolset%" == "12" powershell Install-Product node $env:nodejs_version $env:Platform
-  - if "%msvs_toolset%" == "14" powershell Write-Output "fetching https://mapbox.s3.amazonaws.com/node-cpp11/v$env:nodejs_version/${env:ARCHPATH}node.exe"
-  - if "%msvs_toolset%" == "14" powershell Start-FileDownload "https://mapbox.s3.amazonaws.com/node-cpp11/v$env:nodejs_version/${env:ARCHPATH}node.exe"
-  - node -v
-  - node -e "console.log(process.argv,process.execPath)"
-  - SET PATH=C:\Program Files (x86)\MSBuild\%msvs_toolset%.0\bin;%PATH%
-  - SET PATH=C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\bin;%PATH%
-  - if %platform% == x64 CALL "C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\vcvarsall.bat" amd64
-  - if %platform% == x86 CALL "C:\Program Files (x86)\Microsoft Visual Studio %msvs_toolset%.0\VC\vcvarsall.bat" amd64_x86
-  - npm install --build-from-source --msvs_version=2013 %TOOLSET_ARGS% --loglevel=http
-  - node_modules\.bin\node-pre-gyp reveal module --silent > module.txt
-  - SET /p MODULE=<module.txt
-  - del module.txt
-  - node -e "console.log(process.execPath)" > node_path.txt
-  - SET /p NODE_EXE_PATH=<node_path.txt
-  - del node_path.txt
-  # should display MSVCP140.dll if build with visual studio 2014 and /MD
-  - dumpbin /DEPENDENTS "%NODE_EXE_PATH%"
-  - dumpbin /DEPENDENTS "%MODULE%"
-  - npm test
-  - node-pre-gyp package %TOOLSET_ARGS%
-  # make commit message env var shorter
-  - SET CM=%APPVEYOR_REPO_COMMIT_MESSAGE%
-  - if not "%CM%" == "%CM:[publish binary]=%" node-pre-gyp --msvs_version=2013 publish %TOOLSET_ARGS%
-  - if not "%CM%" == "%CM:[republish binary]=%" node-pre-gyp --msvs_version=2013 unpublish publish %TOOLSET_ARGS%
+  - CALL build-appveyor.bat
 
 build: OFF
 test: OFF
