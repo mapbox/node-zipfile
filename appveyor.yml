@@ -34,7 +34,7 @@ environment:
       platform: x86
 
 install:
-  - Start-FileDownload https://github.com/mapbox/ci-scripts/raw/master/node/ci.bat
+  - ps: Start-FileDownload 'https://github.com/mapbox/ci-scripts/raw/master/node/ci.bat'
   - CALL ci.bat
 
 build: OFF
