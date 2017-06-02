@@ -34,7 +34,8 @@ environment:
       platform: x86
 
 install:
-  - CALL build-appveyor.bat
+  - Start-FileDownload https://github.com/mapbox/ci-scripts/raw/master/node/ci.bat
+  - CALL ci.bat
 
 build: OFF
 test: OFF
