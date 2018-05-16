@@ -1,6 +1,6 @@
 {
   "name": "zipfile",
-  "version": "0.5.11",
+  "version": "0.5.11-testciusermapsam",
   "main": "./lib/index.js",
   "description": "C++ library for handling zipfiles in node",
   "keywords": [
