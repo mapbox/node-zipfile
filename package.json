@@ -1,43 +1,51 @@
 {
-  "name"          : "zipfile",
-  "version"       : "0.5.11",
-  "main"          : "./lib/index.js",
-  "description"   : "C++ library for handling zipfiles in node",
-  "keywords"      : ["zipfile", "uncompress", "unzip", "zlib"],
-  "url"           : "http://github.com/mapbox/node-zipfile",
-  "repository" : {
-           "type" : "git",
-           "url"  : "git://github.com/mapbox/node-zipfile.git"
+  "name": "zipfile",
+  "version": "0.5.11",
+  "main": "./lib/index.js",
+  "description": "C++ library for handling zipfiles in node",
+  "keywords": [
+    "zipfile",
+    "uncompress",
+    "unzip",
+    "zlib"
+  ],
+  "url": "http://github.com/mapbox/node-zipfile",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/node-zipfile.git"
   },
-  "author"        : "Dane Springmeyer <dane@dbsgeo.com>",
-  "contributors"  : [],
-  "licenses"      : ["BSD"],
-  "dependencies"  : {
+  "author": "Dane Springmeyer <dane@dbsgeo.com>",
+  "contributors": [],
+  "licenses": [
+    "BSD"
+  ],
+  "dependencies": {
     "nan": "~2.4.0",
     "node-pre-gyp": "~0.6.30"
   },
   "devDependencies": {
-    "mocha": "~2.3.3",
-    "mkdirp": "~0.5.1",
+    "@mapbox/cloudfriend": "^1.9.0",
     "aws-sdk": "2.x",
-    "queue-async":"~1.2.1"
+    "mkdirp": "~0.5.1",
+    "mocha": "~2.3.3",
+    "queue-async": "~1.2.1"
   },
   "bundledDependencies": [
-      "node-pre-gyp"
+    "node-pre-gyp"
   ],
-  "bin"           : {
-    "unzip.js"    : "./bin/unzip.js"
+  "bin": {
+    "unzip.js": "./bin/unzip.js"
   },
-  "scripts"       : {
+  "scripts": {
     "prepublishOnly": "npm ls",
-    "test"        : "mocha -R spec",
-    "install"     : "node-pre-gyp install --fallback-to-build"
+    "test": "mocha -R spec",
+    "install": "node-pre-gyp install --fallback-to-build"
   },
   "binary": {
-    "module_name" : "zipfile",
-    "module_path" : "./lib/binding/{node_abi}-{platform}-{arch}",
-    "host"        : "https://mapbox-node-binary.s3.amazonaws.com",
-    "remote_path" : "./{name}/v{version}/{toolset}/",
+    "module_name": "zipfile",
+    "module_path": "./lib/binding/{node_abi}-{platform}-{arch}",
+    "host": "https://mapbox-node-binary.s3.amazonaws.com",
+    "remote_path": "./{name}/v{version}/{toolset}/",
     "package_name": "{node_abi}-{platform}-{arch}.tar.gz"
   }
 }
