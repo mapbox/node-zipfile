@@ -7,6 +7,7 @@ addons:
      - llvm-toolchain-precise-3.5
     packages:
      - clang-3.5
+     - libstdc++-4.9-dev
 
 matrix:
   include:
