@@ -7,6 +7,7 @@ addons:
      - llvm-toolchain-precise-3.5
     packages:
      - clang-3.5
+     - libstdc++-4.9-dev
 
 matrix:
   include:
@@ -17,6 +18,14 @@ matrix:
      # Linux
      - os: linux
        compiler: clang
+       env: NODE_VERSION="10" # node abi 48
+     # Linux
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="8" # node abi 48
+     # Linux
+     - os: linux
+       compiler: clang
        env: NODE_VERSION="7" # node abi 48
      - os: linux
        compiler: clang
@@ -24,10 +33,13 @@ matrix:
      - os: linux
        compiler: clang
        env: NODE_VERSION="4" # node abi 46
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="0.10" # node abi 11
      # OS X
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="10" # node abi 47
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="8" # node abi 47
      - os: osx
        compiler: clang
        env: NODE_VERSION="7" # node abi 47
@@ -37,9 +49,6 @@ matrix:
      - os: osx
        compiler: clang
        env: NODE_VERSION="4" # node abi 46
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.10" # node abi 11
 
 env:
   global:
