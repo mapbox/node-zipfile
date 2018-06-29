@@ -20,8 +20,8 @@
     "BSD"
   ],
   "dependencies": {
-    "nan": "~2.4.0",
-    "node-pre-gyp": "~0.6.30"
+    "nan": "~2.10.0",
+    "node-pre-gyp": "~0.10.2"
   },
   "devDependencies": {
     "@mapbox/cloudfriend": "^1.9.0",
