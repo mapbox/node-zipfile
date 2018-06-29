@@ -4,40 +4,40 @@ environment:
   matrix:
     - nodejs_version: 4
       platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 4
       platform: x64
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 6
       platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 6
       platform: x64
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 7
       platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 7
       platform: x64
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 8
       platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 8
       platform: x64
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 9
       platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 9
       platform: x64
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 10
       platform: x86
-      msvs_toolset: 12
+      msvs_toolset: 14
     - nodejs_version: 10
       platform: x64
-      msvs_toolset: 12
+      msvs_toolset: 14
 
 install:
   # add local node to path (since we install it for msvs_toolset == 14)
