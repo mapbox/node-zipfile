@@ -4,9 +4,9 @@ addons:
   apt:
     sources:
      - ubuntu-toolchain-r-test
-     - llvm-toolchain-precise-3.5
+     - llvm-toolchain-precise-3.6
     packages:
-     - clang-3.5
+     - clang-3.6
 
 matrix:
   include:
@@ -67,8 +67,8 @@ before_install:
  - scripts/validate_tag.sh
  - export COVERAGE=${COVERAGE:-false}
  - if [[ $(uname -s) == 'Linux' ]]; then
-     export CXX="clang++-3.5";
-     export CC="clang-3.5";
+     export CXX="clang++-3.6";
+     export CC="clang-3.6";
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;
