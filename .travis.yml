@@ -10,10 +10,10 @@ addons:
 
 matrix:
   include:
-     # Coverage
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="4" COVERAGE=true # node abi 46
+     # Coverage: Disabled pending migration to Codecov
+     #- os: osx
+       #compiler: clang
+       #env: NODE_VERSION="4" COVERAGE=true # node abi 46
      # Linux
      - os: linux
        compiler: clang
