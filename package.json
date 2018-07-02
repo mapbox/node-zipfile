@@ -30,9 +30,6 @@
     "mkdirp": "~0.5.1",
     "mocha": "~5.2.0"
   },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
   "bin": {
     "unzip.js": "./bin/unzip.js"
   },
