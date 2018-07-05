@@ -20,19 +20,16 @@
     "BSD"
   ],
   "dependencies": {
-    "nan": "~2.4.0",
-    "node-pre-gyp": "~0.6.30"
+    "nan": "~2.10.0",
+    "node-pre-gyp": "~0.10.2"
   },
   "devDependencies": {
-    "@mapbox/cloudfriend": "^1.9.0",
-    "aws-sdk": "2.x",
+    "@mapbox/cloudfriend": "^1.9.1",
+    "aws-sdk": "^2.266.1",
+    "d3-queue": "^3.0.7",
     "mkdirp": "~0.5.1",
-    "mocha": "~2.3.3",
-    "queue-async": "~1.2.1"
+    "mocha": "~5.2.0"
   },
-  "bundledDependencies": [
-    "node-pre-gyp"
-  ],
   "bin": {
     "unzip.js": "./bin/unzip.js"
   },

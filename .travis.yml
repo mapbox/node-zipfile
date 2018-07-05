@@ -4,42 +4,54 @@ addons:
   apt:
     sources:
      - ubuntu-toolchain-r-test
-     - llvm-toolchain-precise-3.5
+     - llvm-toolchain-precise-3.6
     packages:
-     - clang-3.5
+     - clang-3.6
 
 matrix:
   include:
-     # Coverage
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="4" COVERAGE=true # node abi 46
+     # Coverage: Disabled pending migration to Codecov
+     #- os: osx
+       #compiler: clang
+       #env: NODE_VERSION="4" COVERAGE=true # node abi 46
      # Linux
      - os: linux
        compiler: clang
-       env: NODE_VERSION="7" # node abi 48
+       env: NODE_VERSION="10" # node abi 64
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="9" # node abi 59
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="8" # node abi 57
+     - os: linux
+       compiler: clang
+       env: NODE_VERSION="7" # node abi 51
      - os: linux
        compiler: clang
        env: NODE_VERSION="6" # node abi 48
      - os: linux
        compiler: clang
        env: NODE_VERSION="4" # node abi 46
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="0.10" # node abi 11
      # OS X
      - os: osx
        compiler: clang
-       env: NODE_VERSION="7" # node abi 47
+       env: NODE_VERSION="10" # node abi 64
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="9" # node abi 59
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="8" # node abi 57
+     - os: osx
+       compiler: clang
+       env: NODE_VERSION="7" # node abi 51
      - os: osx
        compiler: clang
        env: NODE_VERSION="6" # node abi 47
      - os: osx
        compiler: clang
        env: NODE_VERSION="4" # node abi 46
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="0.10" # node abi 11
 
 env:
   global:
@@ -49,8 +61,8 @@ before_install:
  - scripts/validate_tag.sh
  - export COVERAGE=${COVERAGE:-false}
  - if [[ $(uname -s) == 'Linux' ]]; then
-     export CXX="clang++-3.5";
-     export CC="clang-3.5";
+     export CXX="clang++-3.6";
+     export CC="clang-3.6";
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python2.7/site-packages;
    else
      export PYTHONPATH=$(pwd)/mason_packages/.link/lib/python/site-packages;

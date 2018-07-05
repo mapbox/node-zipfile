@@ -40,6 +40,7 @@
     {
       'target_name': 'action_before_build',
       'type': 'none',
+      "win_delay_load_hook": "false",
       'hard_dependency': 1,
       'actions': [
         {

@@ -5,7 +5,7 @@ var zipfile = require('../lib');
 var assert = require('assert');
 var crypto = require('crypto');
 var shasum = crypto.createHash('md5');
-var queue = require('queue-async');
+var d3 = require('d3-queue');
 
 /*
 
@@ -44,7 +44,7 @@ function unzip(err) {
     var zf = new zipfile.ZipFile(filepath);
     console.timeEnd('opening');
     console.time('copying');
-    var q = queue(10);
+    var q = d3.queue(10);
     zf.names.forEach(function(name) {
         q.defer(copy,zf,name);
     })
