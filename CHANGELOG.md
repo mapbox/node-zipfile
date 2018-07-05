@@ -1,5 +1,9 @@
 # changelog
 
+## v0.5.12
+
+- Added node v8 and v10 support
+
 ## v0.5.11
 
  - Republished with `mkdirp` inside node_modules/node-pre-gyp/node_modules/
