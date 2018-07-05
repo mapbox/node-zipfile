@@ -34,7 +34,6 @@
     "unzip.js": "./bin/unzip.js"
   },
   "scripts": {
-    "prepublishOnly": "npm ls",
     "test": "mocha -R spec",
     "install": "node-pre-gyp install --fallback-to-build"
   },
