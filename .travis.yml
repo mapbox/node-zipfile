@@ -20,38 +20,20 @@ matrix:
        env: NODE_VERSION="10" # node abi 64
      - os: linux
        compiler: clang
-       env: NODE_VERSION="9" # node abi 59
-     - os: linux
-       compiler: clang
        env: NODE_VERSION="8" # node abi 57
      - os: linux
        compiler: clang
-       env: NODE_VERSION="7" # node abi 51
-     - os: linux
-       compiler: clang
        env: NODE_VERSION="6" # node abi 48
-     - os: linux
-       compiler: clang
-       env: NODE_VERSION="4" # node abi 46
      # OS X
      - os: osx
        compiler: clang
        env: NODE_VERSION="10" # node abi 64
      - os: osx
        compiler: clang
-       env: NODE_VERSION="9" # node abi 59
-     - os: osx
-       compiler: clang
        env: NODE_VERSION="8" # node abi 57
      - os: osx
        compiler: clang
-       env: NODE_VERSION="7" # node abi 51
-     - os: osx
-       compiler: clang
        env: NODE_VERSION="6" # node abi 47
-     - os: osx
-       compiler: clang
-       env: NODE_VERSION="4" # node abi 46
 
 env:
   global:
