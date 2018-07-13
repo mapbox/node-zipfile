@@ -40,7 +40,6 @@
     {
       'target_name': 'action_before_build',
       'type': 'none',
-      "win_delay_load_hook": "false",
       'hard_dependency': 1,
       'actions': [
         {
@@ -173,7 +172,7 @@
     {
       'target_name': 'libzip',
       'type': '<(library_type)',
-      'include_dirs': [ 
+      'include_dirs': [
           '.',
           '<(SHARED_INTERMEDIATE_DIR)/libzip-<@(libzip_version)/lib',
           '<(node_root_dir)/deps/zlib'
@@ -205,6 +204,7 @@
           'action_before_build',
           'zlib/zlib.gyp:zlib'
       ],
+      "win_delay_load_hook": "false",
       'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/libzip-<@(libzip_version)/lib/zip_add.c',
             '<(SHARED_INTERMEDIATE_DIR)/libzip-<@(libzip_version)/lib/zip_add_dir.c',

@@ -17,6 +17,7 @@
       'sources': [
         'src/node_zipfile.cpp'
       ],
+      "win_delay_load_hook": "false",
       'ldflags': [
         '-Wl,-z,now',
       ],
@@ -54,7 +55,6 @@
     {
       'target_name': 'action_after_build',
       'type': 'none',
-      "win_delay_load_hook": "false",
       'dependencies': [ '<(module_name)' ],
       'copies': [
           {
