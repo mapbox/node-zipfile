@@ -17,6 +17,7 @@ environment:
 
 install:
   - ps: Start-FileDownload 'https://github.com/mapbox/ci-scripts/raw/v2.0.0/node/ci-cpp.bat' -FileName ci.bat
+  - CALL npm install npm -g
   - CALL ci.bat
 
 build: OFF
