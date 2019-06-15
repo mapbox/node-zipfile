@@ -20,7 +20,7 @@ extern "C" {
 #include <fstream>
 #include <stdexcept>
 
-#define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
+#define TOSTR(obj) (*Nan::Utf8String(Nan::To<v8::String>(obj).ToLocalChecked()))
 
 using namespace v8;
 
@@ -42,7 +42,7 @@ void ZipFile::Initialize(Local<Object> target) {
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("count").ToLocalChecked(), get_prop);
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("names").ToLocalChecked(), get_prop);
 
-    target->Set(Nan::New("ZipFile").ToLocalChecked(),lcons->GetFunction());
+    Nan::Set(target, Nan::New("ZipFile").ToLocalChecked(), Nan::GetFunction(lcons).ToLocalChecked());
     constructor.Reset(lcons);
 }
 
@@ -109,7 +109,7 @@ void ZipFile::get_prop(v8::Local<v8::String> property, const Nan::PropertyCallba
         unsigned num = zf->names_.size();
         Local<Array> a = Nan::New<Array>(num);
         for (unsigned i = 0; i < num; ++i) {
-            a->Set(i, Nan::New(zf->names_[i].c_str()).ToLocalChecked());
+            Nan::Set(a, i, Nan::New(zf->names_[i].c_str()).ToLocalChecked());
         }
         args.GetReturnValue().Set(a);
     } else {
@@ -264,15 +264,17 @@ void ZipFile::Work_CopyFile(uv_work_t* req) {
     }
 }
 
-void ZipFile::Work_AfterCopyFile(uv_work_t* req) {
+void ZipFile::Work_AfterCopyFile(uv_work_t* req, int status) {
     Nan::HandleScope scope;
     copy_file_baton *closure = static_cast<copy_file_baton *>(req->data);
     if (!closure->error_name.empty()) {
+        Nan::AsyncResource ar("ZipFile::Work_AfterCopyFile");
         Local<Value> argv[1] = { Nan::Error(closure->error_name.c_str()) };
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
+        ar.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
     } else {
+        Nan::AsyncResource ar("ZipFile::Work_AfterCopyFile");
         Local<Value> argv[1] = { Nan::Null() };
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
+        ar.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
     }
     closure->zf->Unref();
     closure->cb.Reset();
@@ -462,18 +464,20 @@ void ZipFile::Work_ReadFile(uv_work_t* req) {
     }
 }
 
-void ZipFile::Work_AfterReadFile(uv_work_t* req) {
+void ZipFile::Work_AfterReadFile(uv_work_t* req, int status) {
     Nan::HandleScope scope;
 
     closure_t *closure = static_cast<closure_t *>(req->data);
 
     if (closure->error) {
+        Nan::AsyncResource ar("ZipFile::Work_AfterReadFile");
         Local<Value> argv[1] = { Nan::Error(closure->error_name.c_str()) };
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
+        ar.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 1, argv);
     } else {
+        Nan::AsyncResource ar("ZipFile::Work_AfterReadFile");
         Local<Object> retbuf = Nan::CopyBuffer(reinterpret_cast<char *>(&closure->data[0]), closure->data.size()).ToLocalChecked();
         Local<Value> argv[2] = { Nan::Null(), retbuf };
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 2, argv);
+        ar.runInAsyncScope(Nan::GetCurrentContext()->Global(), Nan::New(closure->cb), 2, argv);
     }
 
     if (closure->za) zip_close(closure->za);
@@ -482,19 +486,17 @@ void ZipFile::Work_AfterReadFile(uv_work_t* req) {
     delete closure;
 }
 
-extern "C" {
-    static void init(Local<Object> target) {
-        ZipFile::Initialize(target);
+NAN_MODULE_INIT(init) {
+    ZipFile::Initialize(target);
 
-        // node-zipfile version
-        target->Set(Nan::New("version").ToLocalChecked(), Nan::New("0.5.8").ToLocalChecked());
+    // node-zipfile version
+    Nan::Set(target, Nan::New("version").ToLocalChecked(), Nan::New("0.5.8").ToLocalChecked());
 
-        // versions of deps
-        Local<Object> versions = Nan::New<Object>();
-        versions->Set(Nan::New("node").ToLocalChecked(), Nan::New(NODE_VERSION+1).ToLocalChecked());
-        versions->Set(Nan::New("v8").ToLocalChecked(), Nan::New(V8::GetVersion()).ToLocalChecked());
-        target->Set(Nan::New("versions").ToLocalChecked(), versions);
-    }
-    #define MAKE_MODULE(_modname) NODE_MODULE( _modname, init)
-    MAKE_MODULE(MODULE_NAME)
+    // versions of deps
+    Local<Object> versions = Nan::New<Object>();
+    Nan::Set(versions, Nan::New("node").ToLocalChecked(), Nan::New(NODE_VERSION+1).ToLocalChecked());
+    Nan::Set(versions, Nan::New("v8").ToLocalChecked(), Nan::New(V8::GetVersion()).ToLocalChecked());
+    Nan::Set(target, Nan::New("versions").ToLocalChecked(), versions);
 }
+
+NAN_MODULE_WORKER_ENABLED(zipfile, init);
