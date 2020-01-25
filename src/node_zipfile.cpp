@@ -20,7 +20,7 @@ extern "C" {
 #include <fstream>
 #include <stdexcept>
 
-#define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
+#define TOSTR(obj) (*Nan::Utf8String(obj))
 
 using namespace v8;
 
@@ -42,7 +42,7 @@ void ZipFile::Initialize(Local<Object> target) {
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("count").ToLocalChecked(), get_prop);
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("names").ToLocalChecked(), get_prop);
 
-    target->Set(Nan::New("ZipFile").ToLocalChecked(),lcons->GetFunction());
+    target->Set(Nan::New("ZipFile").ToLocalChecked(),Nan::GetFunction(lcons).ToLocalChecked());
     constructor.Reset(lcons);
 }
 
