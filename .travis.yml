@@ -17,6 +17,9 @@ matrix:
      # Linux
      - os: linux
        compiler: clang
+       env: NODE_VERSION="16" # node abi 64
+     - os: linux
+       compiler: clang
        env: NODE_VERSION="10" # node abi 64
      - os: linux
        compiler: clang
