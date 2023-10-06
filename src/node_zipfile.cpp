@@ -20,7 +20,7 @@ extern "C" {
 #include <fstream>
 #include <stdexcept>
 
-#define TOSTR(obj) (*String::Utf8Value((obj)->ToString()))
+#define TOSTR(obj) (*Nan::Utf8String(obj))
 
 using namespace v8;
 
@@ -42,7 +42,7 @@ void ZipFile::Initialize(Local<Object> target) {
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("count").ToLocalChecked(), get_prop);
     Nan::SetAccessor(lcons->InstanceTemplate(), Nan::New("names").ToLocalChecked(), get_prop);
 
-    target->Set(Nan::New("ZipFile").ToLocalChecked(),lcons->GetFunction());
+    Nan::Set(target, Nan::New("ZipFile").ToLocalChecked(), Nan::GetFunction(lcons).ToLocalChecked());
     constructor.Reset(lcons);
 }
 
@@ -109,7 +109,7 @@ void ZipFile::get_prop(v8::Local<v8::String> property, const Nan::PropertyCallba
         unsigned num = zf->names_.size();
         Local<Array> a = Nan::New<Array>(num);
         for (unsigned i = 0; i < num; ++i) {
-            a->Set(i, Nan::New(zf->names_[i].c_str()).ToLocalChecked());
+            Nan::Set(a, i, Nan::New(zf->names_[i].c_str()).ToLocalChecked());
         }
         args.GetReturnValue().Set(a);
     } else {
@@ -487,13 +487,13 @@ extern "C" {
         ZipFile::Initialize(target);
 
         // node-zipfile version
-        target->Set(Nan::New("version").ToLocalChecked(), Nan::New("0.5.8").ToLocalChecked());
+        Nan::Set(target, Nan::New("version").ToLocalChecked(), Nan::New("0.5.8").ToLocalChecked());
 
         // versions of deps
         Local<Object> versions = Nan::New<Object>();
-        versions->Set(Nan::New("node").ToLocalChecked(), Nan::New(NODE_VERSION+1).ToLocalChecked());
-        versions->Set(Nan::New("v8").ToLocalChecked(), Nan::New(V8::GetVersion()).ToLocalChecked());
-        target->Set(Nan::New("versions").ToLocalChecked(), versions);
+        Nan::Set(versions, Nan::New("node").ToLocalChecked(), Nan::New(NODE_VERSION+1).ToLocalChecked());
+        Nan::Set(versions, Nan::New("v8").ToLocalChecked(), Nan::New(V8::GetVersion()).ToLocalChecked());
+        Nan::Set(target, Nan::New("versions").ToLocalChecked(), versions);
     }
     #define MAKE_MODULE(_modname) NODE_MODULE( _modname, init)
     MAKE_MODULE(MODULE_NAME)
